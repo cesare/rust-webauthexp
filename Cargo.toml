@@ -14,4 +14,5 @@ actix-rt = "~2.2.0"
 actix-web = "=4.0.0-beta.3"
 actix-utils = "=3.0.0-beta.2"
 anyhow = "~1.0.40"
+structopt = "~0.3.21"
 tokio = { version = "~1.4.0", features = ["macros", "rt-multi-thread"] }
