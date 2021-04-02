@@ -1,4 +1,4 @@
-use actix_web::{App, HttpServer, middleware::Logger};
+use actix_web::{middleware::Logger, App, HttpServer};
 use anyhow::Result;
 use env_logger::Env;
 
