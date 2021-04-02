@@ -13,8 +13,8 @@ async fn main() -> Result<()> {
 
     let server = HttpServer::new(move || {
         App::new()
-        .wrap(Logger::default())
-        .wrap(Logger::new("%a %t \"%r\" %s %b \"%{Referer}i\" \"%{User-Agent}i\" %T"))
+            .wrap(Logger::default())
+            .wrap(Logger::new("%a %t \"%r\" %s %b \"%{Referer}i\" \"%{User-Agent}i\" %T"))
     });
     server.bind(config.bind_address())?.run().await?;
 
