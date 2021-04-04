@@ -1,13 +1,14 @@
 use actix_web::{middleware::Logger, App, HttpServer};
 use anyhow::Result;
+use app::config::AppArgs;
 use env_logger::Env;
 
 mod app;
-use crate::app::config::AppConfig;
 
 #[actix_rt::main]
 async fn main() -> Result<()> {
-    let config = AppConfig::new();
+    let args = AppArgs::new();
+    let config = args.load_config().await?;
 
     env_logger::Builder::from_env(Env::default().default_filter_or("info")).init();
 

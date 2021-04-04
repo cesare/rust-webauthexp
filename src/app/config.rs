@@ -1,27 +1,44 @@
+use std::path::PathBuf;
+
+use anyhow::Result;
+use serde_derive::Deserialize;
 use structopt::StructOpt;
+use tokio::{fs::File, io::AsyncReadExt};
 
 #[derive(StructOpt)]
 #[structopt(name = "webauthexp")]
-struct AppArgs {
-    #[structopt(short = "b", long = "bind", default_value = "127.0.0.1")]
-    bind: String,
-
-    #[structopt(short = "p", long = "port", default_value = "8000")]
-    port: u32,
+pub struct AppArgs {
+    #[structopt(short, long, parse(from_os_str))]
+    config: PathBuf,
 }
 
+impl AppArgs {
+    pub fn new() -> Self {
+        Self::from_args()
+    }
+
+    pub async fn load_config(&self) -> Result<AppConfig> {
+        let mut file = File::open(&self.config).await?;
+        let mut content = String::new();
+        file.read_to_string(&mut content).await?;
+        let config: AppConfig = toml::from_str(&content)?;
+        Ok(config)
+    }
+}
+
+#[derive(Debug, Deserialize)]
+struct ServerConfig {
+    bind: String,
+    port: i32,
+}
+
+#[derive(Debug, Deserialize)]
 pub struct AppConfig {
-    args: AppArgs,
+    server: ServerConfig,
 }
 
 impl AppConfig {
-    pub fn new() -> Self {
-        Self {
-            args: AppArgs::from_args(),
-        }
-    }
-
     pub fn bind_address(&self) -> String {
-        format!("{}:{}", self.args.bind, self.args.port)
+        format!("{}:{}", self.server.bind, self.server.port)
     }
 }
