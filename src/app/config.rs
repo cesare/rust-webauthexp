@@ -33,8 +33,17 @@ struct ServerConfig {
 }
 
 #[derive(Debug, Deserialize)]
+struct GithubConfig {
+    client_id: String,
+    client_secret: String,
+    redirect_uri: String,
+    scope: String,
+}
+
+#[derive(Debug, Deserialize)]
 pub struct AppConfig {
     server: ServerConfig,
+    github: GithubConfig,
 }
 
 impl AppConfig {
