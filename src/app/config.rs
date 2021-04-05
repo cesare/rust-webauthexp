@@ -29,7 +29,7 @@ impl AppArgs {
 #[derive(Debug, Deserialize)]
 struct ServerConfig {
     bind: String,
-    port: i32,
+    port: u16,
 }
 
 #[derive(Debug, Deserialize)]
@@ -47,7 +47,7 @@ pub struct AppConfig {
 }
 
 impl AppConfig {
-    pub fn bind_address(&self) -> String {
-        format!("{}:{}", self.server.bind, self.server.port)
+    pub fn bind_address(&self) -> (String, u16) {
+        (self.server.bind.to_owned(), self.server.port)
     }
 }
