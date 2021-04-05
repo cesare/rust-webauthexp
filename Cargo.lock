@@ -1634,6 +1634,7 @@ dependencies = [
  "actix-web",
  "anyhow",
  "env_logger",
+ "rand",
  "serde",
  "serde_derive",
  "structopt",
