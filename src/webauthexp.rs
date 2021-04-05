@@ -1,3 +1,4 @@
+use actix_session::CookieSession;
 use actix_web::{middleware::Logger, App, HttpServer};
 use anyhow::Result;
 use app::config::AppArgs;
@@ -17,6 +18,7 @@ async fn main() -> Result<()> {
         App::new()
             .wrap(Logger::default())
             .wrap(Logger::new("%a %t \"%r\" %s %b \"%{Referer}i\" \"%{User-Agent}i\" %T"))
+            .wrap(CookieSession::signed(&[0; 32]).secure(false))
             .service(handlers::github::request_authorization)
     });
     server.bind(config.bind_address())?.run().await?;
