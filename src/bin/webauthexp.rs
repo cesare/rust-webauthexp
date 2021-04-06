@@ -1,11 +1,10 @@
 use actix_session::CookieSession;
 use actix_web::{middleware::Logger, App, HttpServer};
 use anyhow::Result;
-use app::config::AppArgs;
 use env_logger::Env;
 
-mod app;
-use crate::app::handlers::{self};
+use webauthexp::app::config::AppArgs;
+use webauthexp::app::handlers::{self};
 
 #[actix_rt::main]
 async fn main() -> Result<()> {
