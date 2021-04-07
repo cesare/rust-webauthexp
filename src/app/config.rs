@@ -26,13 +26,13 @@ impl AppArgs {
     }
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 struct ServerConfig {
     bind: String,
     port: u16,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 struct GithubConfig {
     client_id: String,
     client_secret: String,
@@ -40,7 +40,7 @@ struct GithubConfig {
     scope: String,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct AppConfig {
     server: ServerConfig,
     github: GithubConfig,
