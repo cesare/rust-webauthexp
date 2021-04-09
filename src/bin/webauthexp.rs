@@ -20,7 +20,7 @@ async fn main() -> Result<()> {
             .wrap(Logger::default())
             .wrap(Logger::new("%a %t \"%r\" %s %b \"%{Referer}i\" \"%{User-Agent}i\" %T"))
             .wrap(CookieSession::signed(&[0; 32]).secure(false))
-            .configure(handlers::github::config)
+            .service(handlers::github::create_resource())
     });
     server.bind(bind_address)?.run().await?;
 
