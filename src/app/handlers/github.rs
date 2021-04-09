@@ -11,7 +11,7 @@ pub fn config(cfg: &mut ServiceConfig) {
     );
 }
 
-pub async fn index(_data: actix_web::web::Data<AppConfig>, _session: Session) -> Result<HttpResponse<Body>> {
+async fn index(_data: actix_web::web::Data<AppConfig>, _session: Session) -> Result<HttpResponse<Body>> {
     let response = HttpResponse::Ok().body("ok");
     Ok(response)
 }
