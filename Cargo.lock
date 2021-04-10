@@ -1640,6 +1640,7 @@ dependencies = [
  "structopt",
  "tokio",
  "toml",
+ "url",
 ]
 
 [[package]]
