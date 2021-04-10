@@ -1633,6 +1633,7 @@ dependencies = [
  "actix-utils",
  "actix-web",
  "anyhow",
+ "base64",
  "env_logger",
  "rand",
  "serde",
