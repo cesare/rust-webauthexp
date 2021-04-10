@@ -3,6 +3,7 @@ use actix_session::Session;
 use actix_web::{HttpResponse, Result, Scope, web::{Data, get, scope}};
 
 use crate::app::config::{AppConfig, GithubConfig};
+use crate::app::models::github::GithubAutorizationRequest;
 
 pub fn create_scope(config: &AppConfig) -> Scope {
     scope("/github")
@@ -11,7 +12,9 @@ pub fn create_scope(config: &AppConfig) -> Scope {
         .route("/", get().to(index))
 }
 
-async fn index(_data: Data<GithubConfig>, _session: Session) -> Result<HttpResponse<Body>> {
-    let response = HttpResponse::Ok().body("ok");
+async fn index(data: Data<GithubConfig>, _session: Session) -> Result<HttpResponse<Body>> {
+    let request = GithubAutorizationRequest::new(&data);
+    let request_uri = request.request_uri().unwrap();
+    let response = HttpResponse::Ok().body(request_uri);
     Ok(response)
 }
