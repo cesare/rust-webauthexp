@@ -1,8 +1,8 @@
 use actix_http::body::Body;
 use actix_session::Session;
-use actix_web::{HttpResponse, Result, Scope, web::{Data, get, scope}};
+use actix_web::{HttpResponse, Result, Scope, web::{Data, Query, get, scope}};
 
-use crate::app::config::{AppConfig, GithubConfig};
+use crate::app::{config::{AppConfig, GithubConfig}, models::github::GithubAuthorizationResponse};
 use crate::app::models::github::GithubAutorizationRequest;
 
 pub fn create_scope(config: &AppConfig) -> Scope {
@@ -24,7 +24,8 @@ async fn index(data: Data<GithubConfig>, session: Session) -> Result<HttpRespons
     Ok(response)
 }
 
-async fn callback(_data: Data<GithubConfig>, _session: Session) -> Result<HttpResponse<Body>> {
-    let response = HttpResponse::Ok().body("ok");
+async fn callback(_data: Data<GithubConfig>, _session: Session, response: Query<GithubAuthorizationResponse>) -> Result<HttpResponse<Body>> {
+    let message = format!("ok: {:?}", response);
+    let response = HttpResponse::Ok().body(message);
     Ok(response)
 }

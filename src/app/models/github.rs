@@ -1,5 +1,6 @@
 use anyhow::Result;
 use rand::{RngCore, SeedableRng, rngs::StdRng};
+use serde_derive::Deserialize;
 use url::Url;
 
 use crate::app::config::GithubConfig;
@@ -37,4 +38,10 @@ impl GithubAutorizationRequest {
         let url = Url::parse_with_params(base, &parameters)?;
         Ok(url.into_string())
     }
+}
+
+#[derive(Debug, Deserialize)]
+pub struct GithubAuthorizationResponse {
+    pub code: String,
+    pub state: String,
 }
