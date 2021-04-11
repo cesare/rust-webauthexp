@@ -8,7 +8,7 @@ pub struct GithubAutorizationRequest {
     client_id: String,
     redirect_uri: String,
     scope: String,
-    state: String,
+    pub state: String,
 }
 
 impl GithubAutorizationRequest {

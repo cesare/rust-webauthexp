@@ -13,8 +13,10 @@ pub fn create_scope(config: &AppConfig) -> Scope {
         .route("/callback", get().to(callback))
 }
 
-async fn index(data: Data<GithubConfig>, _session: Session) -> Result<HttpResponse<Body>> {
+async fn index(data: Data<GithubConfig>, session: Session) -> Result<HttpResponse<Body>> {
     let request = GithubAutorizationRequest::new(&data);
+    session.insert("github-oauth-state", &request.state)?;
+
     let request_uri = request.request_uri().unwrap();
     let response = HttpResponse::Found()
         .insert_header(("Location", request_uri))
