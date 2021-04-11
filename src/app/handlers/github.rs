@@ -2,8 +2,8 @@ use actix_http::body::Body;
 use actix_session::Session;
 use actix_web::{HttpResponse, Result, Scope, web::{Data, Query, get, scope}};
 
-use crate::app::{config::{AppConfig, GithubConfig}, models::github::GithubAuthorizationResponse};
-use crate::app::models::github::GithubAutorizationRequest;
+use crate::app::config::{AppConfig, GithubConfig};
+use crate::app::models::github::{GithubAutorizationRequest, GithubAuthorizationResponse};
 
 pub fn create_scope(config: &AppConfig) -> Scope {
     scope("/github")
