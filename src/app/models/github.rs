@@ -1,4 +1,4 @@
-use anyhow::Result;
+use anyhow::{anyhow, Result};
 use rand::{RngCore, SeedableRng, rngs::StdRng};
 use serde_derive::Deserialize;
 use url::Url;
@@ -44,4 +44,39 @@ impl GithubAutorizationRequest {
 pub struct GithubAuthorizationResponse {
     pub code: String,
     pub state: String,
+}
+
+pub struct GithubSignin {
+    config: GithubConfig,
+}
+
+impl GithubSignin {
+    pub fn new(config: &GithubConfig) -> Self {
+        Self {
+            config: config.clone(),
+        }
+    }
+}
+
+struct AccessTokenRequest {
+}
+
+#[derive(Deserialize)]
+struct AccessTokenResponse {
+    pub access_token: String,
+    pub scope: String,
+    pub token_type: String,
+}
+
+impl AccessTokenRequest {
+    fn execute(&self, _config: &GithubConfig, _code: &str, _state: &str) -> Result<AccessTokenResponse> {
+        Err(anyhow!("not implemented yet"))
+    }
+}
+
+#[derive(Debug, Deserialize)]
+pub struct GithubUser {
+    pub id: String,
+    pub login: String,
+    pub name: String,
 }
