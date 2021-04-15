@@ -55,6 +55,9 @@ pub enum GithubSigninError {
     #[error("states do not match")]
     StateMismatch,
 
+    #[error(transparent)]
+    RequestFailed(#[from] reqwest::Error),
+
     #[error("not implemented yet")]
     NotImplemented,
 }
@@ -70,14 +73,14 @@ impl GithubSignin {
         }
     }
 
-    pub fn execute(&self, auth: &GithubAuthorizationResponse, saved_state: Option<String>) -> Result<GithubUser, GithubSigninError> {
+    pub async fn execute(&self, auth: &GithubAuthorizationResponse, saved_state: Option<String>) -> Result<GithubUser, GithubSigninError> {
         let state = saved_state.ok_or(GithubSigninError::StateNotFound)?;
         if state != auth.state {
             return Err(GithubSigninError::StateMismatch)
         }
 
         let token_request = AccessTokenRequest {};
-        let token_response = token_request.execute(&self.config, &auth.code, &state)?;
+        let token_response = token_request.execute(&self.config, &auth.code, &state).await?;
 
         let user_request = GithubUserRequest {};
         user_request.execute(&self.config, &token_response.access_token)
@@ -95,8 +98,23 @@ struct AccessTokenResponse {
 }
 
 impl AccessTokenRequest {
-    fn execute(&self, _config: &GithubConfig, _code: &str, _state: &str) -> Result<AccessTokenResponse, GithubSigninError> {
-        Err(GithubSigninError::NotImplemented)
+    async fn execute(&self, config: &GithubConfig, code: &String, state: &String) -> Result<AccessTokenResponse, GithubSigninError> {
+        let client = reqwest::Client::new();
+        let parameters = [
+            ("client_id", &config.client_id),
+            ("client_secret", &config.client_secret),
+            ("code", code),
+            ("redirect_uri", &config.redirect_uri),
+            ("state", state),
+        ];
+        let result = client.post("https://github.com/login/oauth/access_token")
+            .header("Accept", "application/json")
+            .form(&parameters)
+            .send()
+            .await?
+            .json::<AccessTokenResponse>().await?;
+
+        Ok(result)
     }
 }
 
