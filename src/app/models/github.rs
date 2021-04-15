@@ -1,6 +1,7 @@
-use anyhow::{anyhow, Result};
+use anyhow::Result;
 use rand::{RngCore, SeedableRng, rngs::StdRng};
 use serde_derive::Deserialize;
+use thiserror::Error;
 use url::Url;
 
 use crate::app::config::GithubConfig;
@@ -46,6 +47,18 @@ pub struct GithubAuthorizationResponse {
     pub state: String,
 }
 
+#[derive(Debug, Error)]
+pub enum GithubSigninError {
+    #[error("no saved state found")]
+    StateNotFound,
+
+    #[error("states do not match")]
+    StateMismatch,
+
+    #[error("not implemented yet")]
+    NotImplemented,
+}
+
 pub struct GithubSignin {
     config: GithubConfig,
 }
@@ -55,6 +68,19 @@ impl GithubSignin {
         Self {
             config: config.clone(),
         }
+    }
+
+    pub fn execute(&self, auth: &GithubAuthorizationResponse, saved_state: Option<String>) -> Result<GithubUser, GithubSigninError> {
+        let state = saved_state.ok_or(GithubSigninError::StateNotFound)?;
+        if state != auth.state {
+            return Err(GithubSigninError::StateMismatch)
+        }
+
+        let token_request = AccessTokenRequest {};
+        let token_response = token_request.execute(&self.config, &auth.code, &state)?;
+
+        let user_request = GithubUserRequest {};
+        user_request.execute(&self.config, &token_response.access_token)
     }
 }
 
@@ -69,8 +95,17 @@ struct AccessTokenResponse {
 }
 
 impl AccessTokenRequest {
-    fn execute(&self, _config: &GithubConfig, _code: &str, _state: &str) -> Result<AccessTokenResponse> {
-        Err(anyhow!("not implemented yet"))
+    fn execute(&self, _config: &GithubConfig, _code: &str, _state: &str) -> Result<AccessTokenResponse, GithubSigninError> {
+        Err(GithubSigninError::NotImplemented)
+    }
+}
+
+struct GithubUserRequest {
+}
+
+impl GithubUserRequest {
+    fn execute(&self, _config: &GithubConfig, _access_token: &str) -> Result<GithubUser, GithubSigninError> {
+        Err(GithubSigninError::NotImplemented)
     }
 }
 
