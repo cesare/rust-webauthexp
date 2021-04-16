@@ -83,7 +83,7 @@ impl GithubSignin {
         let token_response = token_request.execute(&self.config, &auth.code, &state).await?;
 
         let user_request = GithubUserRequest {};
-        user_request.execute(&self.config, &token_response.access_token)
+        user_request.execute(&token_response.access_token).await
     }
 }
 
@@ -122,8 +122,16 @@ struct GithubUserRequest {
 }
 
 impl GithubUserRequest {
-    fn execute(&self, _config: &GithubConfig, _access_token: &str) -> Result<GithubUser, GithubSigninError> {
-        Err(GithubSigninError::NotImplemented)
+    async fn execute(&self, access_token: &str) -> Result<GithubUser, GithubSigninError> {
+        let client = reqwest::Client::new();
+        let result = client.get("https://api.github.com/user")
+            .header("Accept", "application/vnd.github.v3+json")
+            .header("Authorization", format!("token {}", access_token))
+            .send()
+            .await?
+            .json::<GithubUser>()
+            .await?;
+        Ok(result)
     }
 }
 
