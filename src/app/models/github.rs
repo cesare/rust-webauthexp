@@ -1,6 +1,7 @@
+use actix_web::{HttpResponse, ResponseError};
 use anyhow::Result;
 use rand::{RngCore, SeedableRng, rngs::StdRng};
-use serde_derive::Deserialize;
+use serde_derive::{Deserialize, Serialize};
 use thiserror::Error;
 use url::Url;
 
@@ -60,6 +61,16 @@ pub enum GithubSigninError {
 
     #[error("not implemented yet")]
     NotImplemented,
+}
+
+impl ResponseError for GithubSigninError {
+    fn status_code(&self) -> reqwest::StatusCode {
+        reqwest::StatusCode::INTERNAL_SERVER_ERROR
+    }
+
+    fn error_response(&self) -> HttpResponse {
+        HttpResponse::InternalServerError().finish()
+    }
 }
 
 pub struct GithubSignin {
@@ -124,20 +135,29 @@ struct GithubUserRequest {
 impl GithubUserRequest {
     async fn execute(&self, access_token: &str) -> Result<GithubUser, GithubSigninError> {
         let client = reqwest::Client::new();
-        let result = client.get("https://api.github.com/user")
+        let request = client.get("https://api.github.com/user")
             .header("Accept", "application/vnd.github.v3+json")
             .header("Authorization", format!("token {}", access_token))
-            .send()
-            .await?
-            .json::<GithubUser>()
+            .header("User-Agent", "Webauthexp")
+            .build()?;
+        let response = client.execute(request)
             .await?;
-        Ok(result)
+        println!("response: {:?}", response);
+        if response.status().is_success() {
+            let result = response.json::<GithubUser>()
+                .await?;
+            Ok(result)
+        } else {
+            let body = response.text().await?;
+            println!("result: {:?}", body);
+            Err(GithubSigninError::NotImplemented)
+        }
     }
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Serialize)]
 pub struct GithubUser {
-    pub id: String,
+    pub id: u64,
     pub login: String,
     pub name: String,
 }

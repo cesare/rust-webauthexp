@@ -3,7 +3,7 @@ use actix_session::Session;
 use actix_web::{HttpResponse, Result, Scope, web::{Data, Query, get, scope}};
 
 use crate::app::config::{AppConfig, GithubConfig};
-use crate::app::models::github::{GithubAutorizationRequest, GithubAuthorizationResponse};
+use crate::app::models::github::{GithubAutorizationRequest, GithubAuthorizationResponse, GithubSignin};
 
 pub fn create_scope(config: &AppConfig) -> Scope {
     scope("/github")
@@ -24,8 +24,10 @@ async fn index(data: Data<GithubConfig>, session: Session) -> Result<HttpRespons
     Ok(response)
 }
 
-async fn callback(_data: Data<GithubConfig>, _session: Session, response: Query<GithubAuthorizationResponse>) -> Result<HttpResponse<Body>> {
-    let message = format!("ok: {:?}", response);
-    let response = HttpResponse::Ok().body(message);
+async fn callback(data: Data<GithubConfig>, session: Session, Query(response): Query<GithubAuthorizationResponse>) -> Result<HttpResponse<Body>> {
+    let signin = GithubSignin::new(&data);
+    let saved_state: Option<String> = session.get("github-oauth-state")?;
+    let user = signin.execute(&response, saved_state).await?;
+    let response = HttpResponse::Ok().json(user);
     Ok(response)
 }
