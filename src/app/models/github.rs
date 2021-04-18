@@ -88,12 +88,12 @@ impl<'a> GithubSignin<'a> {
             return Err(GithubSigninError::StateMismatch)
         }
 
-        let token_response = AccessTokenRequest::new(&self.config)
+        let access_token = AccessTokenRequest::new(&self.config)
             .execute(&auth.code, &state)
             .await?;
 
         UserRequest::new()
-            .execute(&token_response.access_token)
+            .execute(&access_token.token)
             .await
     }
 }
@@ -103,10 +103,9 @@ struct AccessTokenRequest<'a> {
 }
 
 #[derive(Deserialize)]
-struct AccessTokenResponse {
-    pub access_token: String,
-    pub scope: String,
-    pub token_type: String,
+struct AccessToken {
+    #[serde(rename(deserialize = "access_token"))]
+    token: String,
 }
 
 impl<'a> AccessTokenRequest<'a> {
@@ -116,7 +115,7 @@ impl<'a> AccessTokenRequest<'a> {
         }
     }
 
-    async fn execute(&self, code: &String, state: &String) -> Result<AccessTokenResponse, GithubSigninError> {
+    async fn execute(&self, code: &String, state: &String) -> Result<AccessToken, GithubSigninError> {
         let config = self.config;
         let client = reqwest::Client::new();
         let parameters = [
@@ -131,7 +130,7 @@ impl<'a> AccessTokenRequest<'a> {
             .form(&parameters)
             .send()
             .await?
-            .json::<AccessTokenResponse>().await?;
+            .json::<AccessToken>().await?;
 
         Ok(result)
     }
