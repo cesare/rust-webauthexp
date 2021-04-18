@@ -92,7 +92,7 @@ impl<'a> GithubSignin<'a> {
             .execute(&auth.code, &state)
             .await?;
 
-        GithubUserRequest::new()
+        UserRequest::new()
             .execute(&token_response.access_token)
             .await
     }
@@ -137,10 +137,10 @@ impl<'a> AccessTokenRequest<'a> {
     }
 }
 
-struct GithubUserRequest {
+struct UserRequest {
 }
 
-impl GithubUserRequest {
+impl UserRequest {
     fn new() -> Self {
         Self {}
     }
