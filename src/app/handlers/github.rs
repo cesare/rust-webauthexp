@@ -15,9 +15,9 @@ pub fn create_scope(config: &AppConfig) -> Scope {
 
 async fn index(config: Data<GithubConfig>, session: Session) -> Result<HttpResponse<Body>> {
     let request = GithubAutorizationRequest::new(&config);
-    session.insert("github-oauth-state", &request.state)?;
+    let (request_uri, state) = request.create().unwrap();
+    session.insert("github-oauth-state", &state)?;
 
-    let request_uri = request.request_uri().unwrap();
     let response = HttpResponse::Found()
         .insert_header(("Location", request_uri))
         .finish();

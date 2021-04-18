@@ -9,33 +9,34 @@ use crate::app::config::GithubConfig;
 
 pub struct GithubAutorizationRequest<'a> {
     config: &'a GithubConfig,
-    pub state: String,
 }
 
 impl<'a> GithubAutorizationRequest<'a> {
     pub fn new(config: &'a GithubConfig) -> Self {
-        let mut rng = StdRng::from_entropy();
-        let mut rs: [u8; 32] = [0; 32];
-        rng.fill_bytes(&mut rs);
-        let state = base64::encode_config(rs, base64::URL_SAFE);
-
         Self {
             config: config,
-            state: state,
         }
     }
 
-    pub fn request_uri(&self) -> Result<String> {
+    pub fn create(&self) -> Result<(String, String)> {
         let config = self.config;
+        let state = self.generate_state();
         let base = "https://github.com/login/oauth/authorize";
         let parameters = vec![
             ("client_id", &config.client_id),
             ("redirect_uri", &config.redirect_uri),
             ("scope", &config.scope),
-            ("state", &self.state),
+            ("state", &state),
         ];
         let url = Url::parse_with_params(base, &parameters)?;
-        Ok(url.into_string())
+        Ok((url.into_string(), state))
+    }
+
+    fn generate_state(&self) -> String {
+        let mut rng = StdRng::from_entropy();
+        let mut rs: [u8; 32] = [0; 32];
+        rng.fill_bytes(&mut rs);
+        base64::encode_config(rs, base64::URL_SAFE)
     }
 }
 
