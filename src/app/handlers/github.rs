@@ -13,8 +13,8 @@ pub fn create_scope(config: &AppConfig) -> Scope {
         .route("/callback", get().to(callback))
 }
 
-async fn index(data: Data<GithubConfig>, session: Session) -> Result<HttpResponse<Body>> {
-    let request = GithubAutorizationRequest::new(&data);
+async fn index(config: Data<GithubConfig>, session: Session) -> Result<HttpResponse<Body>> {
+    let request = GithubAutorizationRequest::new(&config);
     session.insert("github-oauth-state", &request.state)?;
 
     let request_uri = request.request_uri().unwrap();
@@ -24,8 +24,8 @@ async fn index(data: Data<GithubConfig>, session: Session) -> Result<HttpRespons
     Ok(response)
 }
 
-async fn callback(data: Data<GithubConfig>, session: Session, Query(response): Query<GithubAuthorizationResponse>) -> Result<HttpResponse<Body>> {
-    let signin = GithubSignin::new(&data);
+async fn callback(config: Data<GithubConfig>, session: Session, Query(response): Query<GithubAuthorizationResponse>) -> Result<HttpResponse<Body>> {
+    let signin = GithubSignin::new(&config);
     let saved_state: Option<String> = session.get("github-oauth-state")?;
     let user = signin.execute(&response, saved_state).await?;
     let response = HttpResponse::Ok().json(user);
