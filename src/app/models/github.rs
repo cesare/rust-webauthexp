@@ -90,11 +90,13 @@ impl<'a> GithubSignin<'a> {
             return Err(GithubSigninError::StateMismatch)
         }
 
-        let token_request = AccessTokenRequest::new(&self.config);
-        let token_response = token_request.execute(&auth.code, &state).await?;
+        let token_response = AccessTokenRequest::new(&self.config)
+            .execute(&auth.code, &state)
+            .await?;
 
-        let user_request = GithubUserRequest {};
-        user_request.execute(&token_response.access_token).await
+        GithubUserRequest::new()
+            .execute(&token_response.access_token)
+            .await
     }
 }
 
@@ -141,6 +143,10 @@ struct GithubUserRequest {
 }
 
 impl GithubUserRequest {
+    fn new() -> Self {
+        Self {}
+    }
+
     async fn execute(&self, access_token: &str) -> Result<GithubUser, GithubSigninError> {
         let client = reqwest::Client::new();
         let response = client.get("https://api.github.com/user")
