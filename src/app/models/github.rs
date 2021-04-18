@@ -143,12 +143,11 @@ struct GithubUserRequest {
 impl GithubUserRequest {
     async fn execute(&self, access_token: &str) -> Result<GithubUser, GithubSigninError> {
         let client = reqwest::Client::new();
-        let request = client.get("https://api.github.com/user")
+        let response = client.get("https://api.github.com/user")
             .header("Accept", "application/vnd.github.v3+json")
             .header("Authorization", format!("token {}", access_token))
             .header("User-Agent", "Webauthexp")
-            .build()?;
-        let response = client.execute(request)
+            .send()
             .await?;
 
         if response.status().is_success() {
