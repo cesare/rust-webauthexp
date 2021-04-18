@@ -25,9 +25,13 @@ async fn index(config: Data<GithubConfig>, session: Session) -> Result<HttpRespo
 }
 
 async fn callback(config: Data<GithubConfig>, session: Session, Query(response): Query<GithubAuthorizationResponse>) -> Result<HttpResponse<Body>> {
-    let signin = GithubSignin::new(&config);
-    let saved_state: Option<String> = session.get("github-oauth-state")?;
-    let user = signin.execute(&response, saved_state).await?;
+    let key = "github-oauth-state";
+    let saved_state: Option<String> = session.get(key)?;
+    let _ = session.remove(key);
+
+    let user = GithubSignin::new(&config)
+        .execute(&response, saved_state)
+        .await?;
     let response = HttpResponse::Ok().json(user);
     Ok(response)
 }
