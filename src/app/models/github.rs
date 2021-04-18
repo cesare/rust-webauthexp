@@ -73,14 +73,14 @@ impl ResponseError for GithubSigninError {
     }
 }
 
-pub struct GithubSignin {
-    config: GithubConfig,
+pub struct GithubSignin<'a> {
+    config: &'a GithubConfig,
 }
 
-impl GithubSignin {
-    pub fn new(config: &GithubConfig) -> Self {
+impl<'a> GithubSignin<'a> {
+    pub fn new(config: &'a GithubConfig) -> Self {
         Self {
-            config: config.clone(),
+            config: config,
         }
     }
 
@@ -90,15 +90,16 @@ impl GithubSignin {
             return Err(GithubSigninError::StateMismatch)
         }
 
-        let token_request = AccessTokenRequest {};
-        let token_response = token_request.execute(&self.config, &auth.code, &state).await?;
+        let token_request = AccessTokenRequest::new(&self.config);
+        let token_response = token_request.execute(&auth.code, &state).await?;
 
         let user_request = GithubUserRequest {};
         user_request.execute(&token_response.access_token).await
     }
 }
 
-struct AccessTokenRequest {
+struct AccessTokenRequest<'a> {
+    config: &'a GithubConfig,
 }
 
 #[derive(Deserialize)]
@@ -108,8 +109,15 @@ struct AccessTokenResponse {
     pub token_type: String,
 }
 
-impl AccessTokenRequest {
-    async fn execute(&self, config: &GithubConfig, code: &String, state: &String) -> Result<AccessTokenResponse, GithubSigninError> {
+impl<'a> AccessTokenRequest<'a> {
+    fn new(config: &'a GithubConfig) -> Self {
+        Self {
+            config: config
+        }
+    }
+
+    async fn execute(&self, code: &String, state: &String) -> Result<AccessTokenResponse, GithubSigninError> {
+        let config = self.config;
         let client = reqwest::Client::new();
         let parameters = [
             ("client_id", &config.client_id),
