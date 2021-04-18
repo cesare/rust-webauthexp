@@ -150,14 +150,13 @@ impl GithubUserRequest {
             .build()?;
         let response = client.execute(request)
             .await?;
-        println!("response: {:?}", response);
+
         if response.status().is_success() {
             let result = response.json::<GithubUser>()
                 .await?;
             Ok(result)
         } else {
-            let body = response.text().await?;
-            println!("result: {:?}", body);
+            let _body = response.text().await?;
             Err(GithubSigninError::NotImplemented)
         }
     }
