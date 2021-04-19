@@ -41,9 +41,18 @@ pub struct GithubConfig {
 }
 
 #[derive(Clone, Debug, Deserialize)]
+pub struct GoogleConfig {
+    pub client_id: String,
+    pub client_secret: String,
+    pub redirect_uri: String,
+    pub scope: String,
+}
+
+#[derive(Clone, Debug, Deserialize)]
 pub struct AppConfig {
     server: ServerConfig,
     pub github: GithubConfig,
+    pub google: GoogleConfig,
 }
 
 impl AppConfig {
