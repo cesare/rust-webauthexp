@@ -20,6 +20,7 @@ async fn main() -> Result<()> {
             .wrap(Logger::new("%a %t \"%r\" %s %b \"%{Referer}i\" \"%{User-Agent}i\" %T"))
             .wrap(CookieSession::signed(&[0; 32]).secure(false))
             .service(handlers::github::create_scope(&config))
+            .service(handlers::google::create_scope(&config))
     });
     server.bind(bind_address)?.run().await?;
 
