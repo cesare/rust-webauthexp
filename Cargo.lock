@@ -1968,6 +1968,7 @@ version = "0.1.0"
 dependencies = [
  "actix-http",
  "actix-rt",
+ "actix-service",
  "actix-session",
  "actix-utils",
  "actix-web",
