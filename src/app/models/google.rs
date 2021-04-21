@@ -5,6 +5,17 @@ use url::Url;
 
 use crate::app::config::GoogleConfig;
 
+struct RandomString<const N: usize> {}
+
+impl<const N: usize> RandomString<N> {
+    fn generate() -> String {
+        let mut rng = StdRng::from_entropy();
+        let mut rs: [u8; N] = [0; N];
+        rng.fill_bytes(&mut rs);
+        base64::encode_config(rs, base64::URL_SAFE)
+    }
+}
+
 pub struct GoogleAutorization<'a> {
     config: &'a GoogleConfig,
 }
@@ -41,17 +52,11 @@ impl<'a> GoogleAutorization<'a> {
     }
 
     fn generate_state(&self) -> String {
-        let mut rng = StdRng::from_entropy();
-        let mut rs: [u8; 32] = [0; 32];
-        rng.fill_bytes(&mut rs);
-        base64::encode_config(rs, base64::URL_SAFE)
+        RandomString::<32>::generate()
     }
 
     fn generate_nonce(&self) -> String {
-        let mut rng = StdRng::from_entropy();
-        let mut rs: [u8; 32] = [0; 32];
-        rng.fill_bytes(&mut rs);
-        base64::encode_config(rs, base64::URL_SAFE)
+        RandomString::<32>::generate()
     }
 }
 
