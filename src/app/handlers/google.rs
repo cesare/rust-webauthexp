@@ -14,12 +14,11 @@ pub fn create_scope(config: &AppConfig) -> Scope {
 }
 
 async fn index(config: Data<GoogleConfig>, session: Session) -> Result<HttpResponse<Body>> {
-    let (request_uri, state, nonce) = GoogleAutorization::new(&config).start().unwrap();
-    session.insert("google-oidc-state", &state)?;
-    session.insert("google-oidc-nonce", &nonce)?;
+    let request = GoogleAutorization::new(&config).start().unwrap();
+    session.insert("google-oidc", &request.attributes)?;
 
     let response = HttpResponse::Found()
-        .insert_header(("Location", request_uri))
+        .insert_header(("Location", request.request_uri))
         .finish();
     Ok(response)
 }

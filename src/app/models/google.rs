@@ -1,6 +1,6 @@
 use anyhow::Result;
 use rand::{RngCore, SeedableRng, rngs::StdRng};
-use serde_derive::Deserialize;
+use serde_derive::{Deserialize, Serialize};
 use url::Url;
 
 use crate::app::config::GoogleConfig;
@@ -16,7 +16,7 @@ impl<'a> GoogleAutorization<'a> {
         }
     }
 
-    pub fn start(&self) -> Result<(String, String, String)> {
+    pub fn start(&self) -> Result<GoogleAuthRequest> {
         let config = self.config;
         let state = self.generate_state();
         let nonce = self.generate_nonce();
@@ -30,7 +30,14 @@ impl<'a> GoogleAutorization<'a> {
             ("nonce", &nonce),
         ];
         let url = Url::parse_with_params(base, &parameters)?;
-        Ok((url.into_string(), state, nonce))
+        let request = GoogleAuthRequest {
+            request_uri: url.into_string(),
+            attributes: RequestAttributes {
+                state: state,
+                nonce: nonce,
+            }
+        };
+        Ok(request)
     }
 
     fn generate_state(&self) -> String {
@@ -46,6 +53,17 @@ impl<'a> GoogleAutorization<'a> {
         rng.fill_bytes(&mut rs);
         base64::encode_config(rs, base64::URL_SAFE)
     }
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+pub struct RequestAttributes {
+    pub state: String,
+    pub nonce: String,
+}
+
+pub struct GoogleAuthRequest {
+    pub request_uri: String,
+    pub attributes: RequestAttributes,
 }
 
 #[derive(Debug, Deserialize)]
