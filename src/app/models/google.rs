@@ -77,3 +77,26 @@ pub struct GoogleAuthorizationResponse {
     pub code: String,
     pub scope: String,
 }
+
+pub struct GoogleSignin<'a> {
+    config: &'a GoogleConfig,
+}
+
+impl<'a> GoogleSignin<'a> {
+    pub fn new(config: &'a GoogleConfig) -> Self {
+        Self {
+            config: config,
+        }
+    }
+
+    pub async fn execute(&self, auth: &GoogleAuthorizationResponse, attributes: Option<RequestAttributes>) -> Result<GoogleId> {
+        todo!();
+    }
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+pub struct GoogleId {
+    pub sub: String,
+    pub email: Option<String>,
+    pub name: Option<String>,
+}
