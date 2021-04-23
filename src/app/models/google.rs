@@ -100,3 +100,45 @@ pub struct GoogleId {
     pub email: Option<String>,
     pub name: Option<String>,
 }
+
+#[derive(Debug, Deserialize)]
+struct TokenResponse {
+    access_token: String,
+    expires_in: u64,
+    id_token: String,
+    scope: String,
+    token_type: String,
+}
+
+struct TokenRequest<'a> {
+    config: &'a GoogleConfig,
+    code: &'a str,
+}
+
+impl<'a> TokenRequest<'a> {
+    fn new(config: &'a GoogleConfig, code: &'a str) -> Self {
+        Self {
+            config: config,
+            code: code,
+        }
+    }
+
+    async fn execute(&self) -> Result<TokenResponse> {
+        let config = self.config;
+        let client = reqwest::Client::new();
+        let parameters = [
+            ("grant_type", "authorization_code"),
+            ("client_id", &config.client_id),
+            ("client_secret", &config.client_secret),
+            ("redirect_uri", &config.redirect_uri),
+            ("code", self.code),
+        ];
+        let response = client.post("https://oauth2.googleapis.com/token") // TODO: use discovery
+            .header("Content-Type", "application/x-www-form-urlencoded")
+            .form(&parameters)
+            .send()
+            .await?;
+        let result = response.json::<TokenResponse>().await?;
+        Ok(result)
+    }
+}
