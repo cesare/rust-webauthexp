@@ -90,6 +90,7 @@ impl<'a> GoogleSignin<'a> {
     }
 
     pub async fn execute(&self, auth: &GoogleAuthorizationResponse, attributes: Option<RequestAttributes>) -> Result<GoogleId> {
+        let token_response = TokenRequest::new(&self.config, &auth.code).execute().await?;
         todo!();
     }
 }
