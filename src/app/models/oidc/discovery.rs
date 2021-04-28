@@ -3,11 +3,11 @@ use serde_derive::{Deserialize, Serialize};
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct OpenIdConfiguration {
-    issuer: String,
-    authorization_endpoint: String,
-    token_endpoint: String,
-    userinfo_endpoint: Option<String>,
-    jwks_uri: String,
+    pub issuer: String,
+    pub authorization_endpoint: String,
+    pub token_endpoint: String,
+    pub userinfo_endpoint: Option<String>,
+    pub jwks_uri: String,
 }
 
 pub struct OpenIdConfigurationDiscovery {
@@ -36,15 +36,21 @@ pub struct Jwks {
     keys: Vec<JsonWebKey>,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+impl Jwks {
+    pub fn find_by_kid(&self, kid: &str) -> Option<&JsonWebKey> {
+        self.keys.iter().find(|jwk| jwk.kid == kid)
+    }
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct JsonWebKey {
-    alg: String,
+    pub alg: String,
     #[serde(rename = "use")]
-    key_use: String,
-    kid: String,
-    e: String,
-    kty: String,
-    n: String,
+    pub key_use: String,
+    pub kid: String,
+    pub e: String,
+    pub kty: String,
+    pub n: String,
 }
 
 pub struct JwksDiscovery {
