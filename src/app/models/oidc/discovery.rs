@@ -10,6 +10,12 @@ pub struct OpenIdConfiguration {
     pub jwks_uri: String,
 }
 
+impl OpenIdConfiguration {
+    pub async fn find_jwks(&self) -> Result<Jwks> {
+        JwksDiscovery::new(&self.jwks_uri).execute().await
+    }
+}
+
 pub struct OpenIdConfigurationDiscovery {
     issuer: String,
 }

@@ -5,7 +5,7 @@ use serde_derive::{Deserialize, Serialize};
 use url::Url;
 
 use crate::app::config::GoogleConfig;
-use crate::app::models::oidc::discovery::{JwksDiscovery, JsonWebKey, OpenIdConfigurationDiscovery};
+use crate::app::models::oidc::discovery::{JsonWebKey, OpenIdConfiguration, OpenIdConfigurationDiscovery};
 
 struct RandomString<const N: usize> {}
 
@@ -92,11 +92,12 @@ impl<'a> GoogleSignin<'a> {
     }
 
     pub async fn execute(&self, auth: &GoogleAuthorizationResponse, attributes: Option<RequestAttributes>) -> Result<GoogleId> {
+        let openid_config = OpenIdConfigurationDiscovery::new("https://accounts.google.com").execute().await?;
         let token_response = TokenRequest::new(&self.config, &auth.code).execute().await?;
 
         let id_token = token_response.id_token;
         let header = jsonwebtoken::decode_header(&id_token)?;
-        let jwk = self.find_jwk(&header.kid.unwrap()).await?;
+        let jwk = self.find_jwk(&header.kid.unwrap(), &openid_config).await?;
 
         let decoding_key = DecodingKey::from_rsa_components(&jwk.n, &jwk.e);
         let validation = Validation::new(Algorithm::RS256);
@@ -104,9 +105,8 @@ impl<'a> GoogleSignin<'a> {
         Ok(google_id.claims)
     }
 
-    async fn find_jwk(&self, kid: &str) -> Result<JsonWebKey> {
-        let openid_config = OpenIdConfigurationDiscovery::new("https://accounts.google.com").execute().await?;
-        let jwks = JwksDiscovery::new(&openid_config.jwks_uri).execute().await?;
+    async fn find_jwk(&self, kid: &str, openid_config: &OpenIdConfiguration) -> Result<JsonWebKey> {
+        let jwks = openid_config.find_jwks().await?;
         let jwk = jwks.find_by_kid(&kid).unwrap();
         Ok(jwk.clone())
     }
