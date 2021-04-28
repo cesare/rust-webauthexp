@@ -3,7 +3,7 @@ use actix_session::Session;
 use actix_web::{HttpResponse, Result, Scope, web::{Data, Query, get, scope}};
 
 use crate::app::config::{AppConfig, GoogleConfig};
-use crate::app::models::google::{GoogleAutorization, GoogleAuthorizationResponse};
+use crate::app::models::google::{GoogleAutorization, GoogleAuthorizationResponse, GoogleSignin, RequestAttributes};
 
 pub fn create_scope(config: &AppConfig) -> Scope {
     scope("/google")
@@ -23,7 +23,20 @@ async fn index(config: Data<GoogleConfig>, session: Session) -> Result<HttpRespo
     Ok(response)
 }
 
-async fn callback(_config: Data<GoogleConfig>, _session: Session, Query(_response): Query<GoogleAuthorizationResponse>) -> Result<HttpResponse<Body>> {
-    let response = HttpResponse::Ok().finish();
-    Ok(response)
+async fn callback(config: Data<GoogleConfig>, session: Session, Query(response): Query<GoogleAuthorizationResponse>) -> Result<HttpResponse<Body>> {
+    let key = "google-oidc";
+    let attributes = session.get::<RequestAttributes>(key)?;
+    let _ = session.remove(key);
+
+    let result = GoogleSignin::new(&config).execute(&response, attributes).await;
+    match result {
+        Ok(google_id) => {
+            let response = HttpResponse::Ok().json(google_id);
+            Ok(response)
+        },
+        _ => {
+            let response = HttpResponse::InternalServerError().finish();
+            Ok(response)
+        }
+    }
 }
