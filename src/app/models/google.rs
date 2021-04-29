@@ -93,7 +93,7 @@ impl<'a> GoogleSignin<'a> {
 
     pub async fn execute(&self, auth: &GoogleAuthorizationResponse, attributes: Option<RequestAttributes>) -> Result<GoogleId> {
         let openid_config = OpenIdConfigurationDiscovery::new("https://accounts.google.com").execute().await?;
-        let token_response = TokenRequest::new(&self.config, &auth.code).execute().await?;
+        let token_response = TokenRequest::new(&self.config, &openid_config, &auth.code).execute().await?;
 
         let id_token = token_response.id_token;
         let header = jsonwebtoken::decode_header(&id_token)?;
@@ -130,13 +130,15 @@ struct TokenResponse {
 
 struct TokenRequest<'a> {
     config: &'a GoogleConfig,
+    openid_config: &'a OpenIdConfiguration,
     code: &'a str,
 }
 
 impl<'a> TokenRequest<'a> {
-    fn new(config: &'a GoogleConfig, code: &'a str) -> Self {
+    fn new(config: &'a GoogleConfig, openid_config: &'a OpenIdConfiguration, code: &'a str) -> Self {
         Self {
             config: config,
+            openid_config: openid_config,
             code: code,
         }
     }
@@ -151,7 +153,7 @@ impl<'a> TokenRequest<'a> {
             ("redirect_uri", &config.redirect_uri),
             ("code", self.code),
         ];
-        let response = client.post("https://oauth2.googleapis.com/token") // TODO: use discovery
+        let response = client.post(&self.openid_config.token_endpoint)
             .header("Content-Type", "application/x-www-form-urlencoded")
             .form(&parameters)
             .send()
