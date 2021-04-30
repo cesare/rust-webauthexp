@@ -1,7 +1,8 @@
-use anyhow::Result;
+use anyhow::{anyhow, Result};
 use jsonwebtoken::{Algorithm, DecodingKey, Validation};
 use rand::{RngCore, SeedableRng, rngs::StdRng};
 use serde_derive::{Deserialize, Serialize};
+use thiserror::Error;
 use url::Url;
 
 use crate::app::config::GoogleConfig;
@@ -80,6 +81,18 @@ pub struct GoogleAuthorizationResponse {
     pub scope: String,
 }
 
+#[derive(Debug, Error)]
+pub enum GoogleSigninError {
+    #[error("no saved request attributes")]
+    RequestAttributesMissing,
+
+    #[error("state mismatch")]
+    StateMismatch,
+
+    #[error("nonce mismatch")]
+    NonceMismatch,
+}
+
 pub struct GoogleSignin<'a> {
     config: &'a GoogleConfig,
 }
@@ -92,6 +105,11 @@ impl<'a> GoogleSignin<'a> {
     }
 
     pub async fn execute(&self, auth: &GoogleAuthorizationResponse, attributes: Option<RequestAttributes>) -> Result<GoogleId> {
+        let attrs = attributes.ok_or(GoogleSigninError::RequestAttributesMissing)?;
+        if attrs.state != auth.state {
+            return Err(anyhow!(GoogleSigninError::StateMismatch))
+        }
+
         let openid_config = OpenIdConfigurationDiscovery::new("https://accounts.google.com").execute().await?;
         let token_response = TokenRequest::new(&self.config, &openid_config, &auth.code).execute().await?;
 
@@ -101,8 +119,12 @@ impl<'a> GoogleSignin<'a> {
 
         let decoding_key = DecodingKey::from_rsa_components(&jwk.n, &jwk.e);
         let validation = Validation::new(Algorithm::RS256);
-        let google_id = jsonwebtoken::decode::<GoogleId>(&id_token, &decoding_key, &validation)?;
-        Ok(google_id.claims)
+        let google_id = jsonwebtoken::decode::<GoogleId>(&id_token, &decoding_key, &validation)?.claims;
+        if google_id.nonce == attrs.nonce {
+            Ok(google_id)
+        } else {
+            Err(anyhow!(GoogleSigninError::NonceMismatch))
+        }
     }
 
     async fn find_jwk(&self, kid: &str, openid_config: &OpenIdConfiguration) -> Result<JsonWebKey> {
@@ -117,6 +139,7 @@ pub struct GoogleId {
     pub sub: String,
     pub email: Option<String>,
     pub name: Option<String>,
+    pub nonce: String,
 }
 
 #[derive(Debug, Deserialize)]
