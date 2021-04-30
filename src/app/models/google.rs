@@ -119,9 +119,9 @@ impl<'a> GoogleSignin<'a> {
 
         let decoding_key = DecodingKey::from_rsa_components(&jwk.n, &jwk.e);
         let validation = Validation::new(Algorithm::RS256);
-        let google_id = jsonwebtoken::decode::<GoogleId>(&id_token, &decoding_key, &validation)?.claims;
-        if google_id.nonce == attrs.nonce {
-            Ok(google_id)
+        let claims = jsonwebtoken::decode::<Claims>(&id_token, &decoding_key, &validation)?.claims;
+        if claims.nonce == attrs.nonce {
+            Ok(claims.into())
         } else {
             Err(anyhow!(GoogleSigninError::NonceMismatch))
         }
@@ -135,11 +135,25 @@ impl<'a> GoogleSignin<'a> {
 }
 
 #[derive(Debug, Deserialize, Serialize)]
+struct Claims {
+    pub sub: String,
+    pub email: String,
+    pub nonce: String,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
 pub struct GoogleId {
     pub sub: String,
-    pub email: Option<String>,
-    pub name: Option<String>,
-    pub nonce: String,
+    pub email: String,
+}
+
+impl From<Claims> for GoogleId {
+    fn from(claims: Claims) -> Self {
+        Self {
+            sub: claims.sub,
+            email: claims.email,
+        }
+    }
 }
 
 #[derive(Debug, Deserialize)]
