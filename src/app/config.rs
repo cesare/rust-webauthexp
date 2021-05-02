@@ -48,6 +48,12 @@ pub struct GoogleConfig {
     pub scope: String,
 }
 
+impl GoogleConfig {
+    pub fn issuer(&self) -> String {
+        String::from("https://accounts.google.com")
+    }
+}
+
 #[derive(Clone, Debug, Deserialize)]
 pub struct AppConfig {
     server: ServerConfig,

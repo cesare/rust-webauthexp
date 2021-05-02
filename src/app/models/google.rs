@@ -110,7 +110,7 @@ impl<'a> GoogleSignin<'a> {
             return Err(anyhow!(GoogleSigninError::StateMismatch))
         }
 
-        let openid_config = OpenIdConfigurationDiscovery::new("https://accounts.google.com").execute().await?;
+        let openid_config = OpenIdConfigurationDiscovery::new(&self.config.issuer()).execute().await?;
         let token_response = TokenRequest::new(&self.config, &openid_config, &auth.code).execute().await?;
 
         let id_token = token_response.id_token;
