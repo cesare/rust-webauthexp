@@ -141,6 +141,9 @@ impl<'a> GoogleSignin<'a> {
 
 #[derive(Debug, Deserialize, Serialize)]
 struct Claims {
+    pub aud: String,
+    pub exp: u64,
+    pub iss: String,
     pub sub: String,
     pub email: String,
     pub nonce: String,
