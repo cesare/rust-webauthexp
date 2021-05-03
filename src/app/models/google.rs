@@ -120,17 +120,22 @@ impl<'a> GoogleSignin<'a> {
         let decoding_key = DecodingKey::from_rsa_components(&jwk.n, &jwk.e);
         let validation = Validation::new(Algorithm::RS256);
         let claims = jsonwebtoken::decode::<Claims>(&id_token, &decoding_key, &validation)?.claims;
-        if claims.nonce == attrs.nonce {
-            Ok(claims.into())
-        } else {
-            Err(anyhow!(GoogleSigninError::NonceMismatch))
-        }
+        self.validate_claims(&claims, attrs)?;
+        Ok(claims.into())
     }
 
     async fn find_jwk(&self, kid: &str, openid_config: &OpenIdConfiguration) -> Result<JsonWebKey> {
         let jwks = openid_config.find_jwks().await?;
         let jwk = jwks.find_by_kid(&kid).unwrap();
         Ok(jwk.clone())
+    }
+
+    fn validate_claims(&self, claims: &Claims, attrs: RequestAttributes) -> Result<(), GoogleSigninError> {
+        if claims.nonce != attrs.nonce {
+            return Err(GoogleSigninError::NonceMismatch)
+        }
+
+        Ok(())
     }
 }
 
