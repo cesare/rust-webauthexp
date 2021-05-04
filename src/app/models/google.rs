@@ -91,6 +91,9 @@ pub enum GoogleSigninError {
 
     #[error("nonce mismatch")]
     NonceMismatch,
+
+    #[error("invalid issuer on ID token")]
+    InvalidIssuer,
 }
 
 pub struct GoogleSignin<'a> {
@@ -133,6 +136,9 @@ impl<'a> GoogleSignin<'a> {
     fn validate_claims(&self, claims: &Claims, attrs: RequestAttributes) -> Result<(), GoogleSigninError> {
         if claims.nonce != attrs.nonce {
             return Err(GoogleSigninError::NonceMismatch)
+        }
+        if claims.iss != self.config.issuer() {
+            return Err(GoogleSigninError::InvalidIssuer)
         }
 
         Ok(())
