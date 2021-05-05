@@ -1,3 +1,5 @@
+use std::time::{SystemTime, SystemTimeError};
+
 use anyhow::{anyhow, Result};
 use jsonwebtoken::{Algorithm, DecodingKey, Validation};
 use rand::{RngCore, SeedableRng, rngs::StdRng};
@@ -94,6 +96,12 @@ pub enum GoogleSigninError {
 
     #[error("invalid issuer on ID token")]
     InvalidIssuer,
+
+    #[error("ID token already expired")]
+    IdTokenExpired,
+
+    #[error("Failed to get duration for current time")]
+    InvalidCurrentTime(#[from] SystemTimeError),
 }
 
 pub struct GoogleSignin<'a> {
@@ -139,6 +147,11 @@ impl<'a> GoogleSignin<'a> {
         }
         if claims.iss != self.config.issuer() {
             return Err(GoogleSigninError::InvalidIssuer)
+        }
+
+        let now = SystemTime::now().duration_since(SystemTime::UNIX_EPOCH).map(|d| d.as_secs())?;
+        if claims.exp < now {
+            return Err(GoogleSigninError::IdTokenExpired)
         }
 
         Ok(())
