@@ -47,7 +47,7 @@ impl<'a> GoogleAutorization<'a> {
         ];
         let url = Url::parse_with_params(base, &parameters)?;
         let request = GoogleAuthRequest {
-            request_uri: url.into_string(),
+            request_uri: url.into(),
             attributes: RequestAttributes {
                 state: state,
                 nonce: nonce,

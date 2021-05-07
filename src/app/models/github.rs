@@ -29,7 +29,7 @@ impl<'a> GithubAutorizationRequest<'a> {
             ("state", &state),
         ];
         let url = Url::parse_with_params(base, &parameters)?;
-        Ok((url.into_string(), state))
+        Ok((url.into(), state))
     }
 
     fn generate_state(&self) -> String {
