@@ -2,12 +2,12 @@ use actix_http::body::Body;
 use actix_session::Session;
 use actix_web::{HttpResponse, Result, Scope, web::{Data, Query, get, scope}};
 
-use crate::app::config::{AppConfig, GithubConfig};
+use crate::app::config::GithubConfig;
 use crate::app::models::github::{GithubAutorizationRequest, GithubAuthorizationResponse, GithubSignin};
 
-pub fn create_scope(config: &AppConfig) -> Scope {
+pub fn create_scope(config: &GithubConfig) -> Scope {
     scope("/github")
-        .data(config.github.clone())
+        .data(config.clone())
         .route("", get().to(index))
         .route("/", get().to(index))
         .route("/callback", get().to(callback))

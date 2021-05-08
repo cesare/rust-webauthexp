@@ -2,12 +2,12 @@ use actix_http::body::Body;
 use actix_session::Session;
 use actix_web::{HttpResponse, Result, Scope, web::{Data, Query, get, scope}};
 
-use crate::app::config::{AppConfig, GoogleConfig};
+use crate::app::config::GoogleConfig;
 use crate::app::models::google::{GoogleAutorization, GoogleAuthorizationResponse, GoogleSignin, RequestAttributes};
 
-pub fn create_scope(config: &AppConfig) -> Scope {
+pub fn create_scope(config: &GoogleConfig) -> Scope {
     scope("/google")
-        .data(config.google.clone())
+        .data(config.clone())
         .route("", get().to(index))
         .route("/", get().to(index))
         .route("/callback", get().to(callback))
