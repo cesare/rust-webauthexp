@@ -13,3 +13,8 @@ client_id = "YOUR-GOOGLE-CLIENT-ID"
 client_secret = "YOUR-GOOGLE-CLIENT-SECRET"
 redirect_uri = "http://localhost:8080/google/callback"
 scope = "openid email"
+
+[spotify]
+client_id = "YOUR-SPOTIFY-CLIENT-ID"
+redirect_uri = "http://localhost:8080/spotify/callback"
+scope = "user-library-read"  # see https://developer.spotify.com/documentation/general/guides/scopes/ for available scopes

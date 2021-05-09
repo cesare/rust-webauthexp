@@ -55,10 +55,18 @@ impl GoogleConfig {
 }
 
 #[derive(Clone, Debug, Deserialize)]
+pub struct SpotifyConfig {
+    pub client_id: String,
+    pub redirect_uri: String,
+    pub scope: String,
+}
+
+#[derive(Clone, Debug, Deserialize)]
 pub struct AppConfig {
     server: ServerConfig,
     pub github: GithubConfig,
     pub google: GoogleConfig,
+    pub spotify: SpotifyConfig,
 }
 
 impl AppConfig {
