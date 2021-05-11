@@ -4,7 +4,7 @@ use anyhow::Result;
 use env_logger::Env;
 
 use webauthexp::app::config::AppArgs;
-use webauthexp::app::handlers::{github, google};
+use webauthexp::app::handlers::{github, google, spotify};
 
 #[actix_rt::main]
 async fn main() -> Result<()> {
@@ -21,6 +21,7 @@ async fn main() -> Result<()> {
             .wrap(CookieSession::signed(&[0; 32]).secure(false))
             .service(github::create_scope(&config.github))
             .service(google::create_scope(&config.google))
+            .service(spotify::create_scope(&config.spotify))
     });
     server.bind(bind_address)?.run().await?;
 

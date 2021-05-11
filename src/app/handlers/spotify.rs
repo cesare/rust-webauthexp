@@ -2,7 +2,7 @@ use actix_http::body::Body;
 use actix_session::Session;
 use actix_web::{HttpResponse, Result, Scope, web::{Data, Query, get, scope}};
 
-use crate::app::config::SpotifyConfig;
+use crate::app::{config::SpotifyConfig, models::spotify::SpotifyAuthorization};
 use crate::app::models::spotify::{SpotifyAuthorizationResponse};
 
 pub fn create_scope(config: &SpotifyConfig) -> Scope {
@@ -13,8 +13,14 @@ pub fn create_scope(config: &SpotifyConfig) -> Scope {
         .route("/callback", get().to(callback))
 }
 
-async fn index(_config: Data<SpotifyConfig>, _session: Session) -> Result<HttpResponse<Body>> {
-    todo!()
+async fn index(config: Data<SpotifyConfig>, session: Session) -> Result<HttpResponse<Body>> {
+    let request = SpotifyAuthorization::new(&config).start().unwrap();
+    session.insert("spotify-oauth", &request.attributes)?;
+
+    let response = HttpResponse::Found()
+        .insert_header(("Location", request.request_uri))
+        .finish();
+    Ok(response)
 }
 
 async fn callback(_config: Data<SpotifyConfig>, _session: Session, Query(_response): Query<SpotifyAuthorizationResponse>) -> Result<HttpResponse<Body>> {
