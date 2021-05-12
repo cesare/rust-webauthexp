@@ -72,3 +72,28 @@ pub struct AuthResponse {
     pub state: String,
     pub code: String,
 }
+
+pub struct SpotifySignin<'a> {
+    config: &'a SpotifyConfig,
+    response: &'a AuthResponse,
+    attributes: &'a Option<RequestAttributes>,
+}
+
+impl<'a> SpotifySignin<'a> {
+    pub fn new(config: &'a SpotifyConfig, response: &'a AuthResponse, attributes: &'a Option<RequestAttributes>) -> Self {
+        Self {
+            config: config,
+            response: response,
+            attributes: attributes,
+        }
+    }
+
+    pub async fn execute(&self) -> Result<SigninResult> {
+        todo!()
+    }
+}
+
+#[derive(Debug, Serialize)]
+pub struct SigninResult {
+    access_token: String,
+}
