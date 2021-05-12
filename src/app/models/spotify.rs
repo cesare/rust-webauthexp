@@ -68,7 +68,7 @@ pub struct RequestAttributes {
 }
 
 #[derive(Debug, Deserialize)]
-pub struct SpotifyAuthorizationResponse {
+pub struct AuthResponse {
     pub state: String,
     pub code: String,
 }

@@ -3,7 +3,7 @@ use actix_session::Session;
 use actix_web::{HttpResponse, Result, Scope, web::{Data, Query, get, scope}};
 
 use crate::app::{config::SpotifyConfig, models::spotify::SpotifyAuthorization};
-use crate::app::models::spotify::{SpotifyAuthorizationResponse};
+use crate::app::models::spotify::AuthResponse;
 
 pub fn create_scope(config: &SpotifyConfig) -> Scope {
     scope("/spotify")
@@ -23,6 +23,6 @@ async fn index(config: Data<SpotifyConfig>, session: Session) -> Result<HttpResp
     Ok(response)
 }
 
-async fn callback(_config: Data<SpotifyConfig>, _session: Session, Query(_response): Query<SpotifyAuthorizationResponse>) -> Result<HttpResponse<Body>> {
+async fn callback(_config: Data<SpotifyConfig>, _session: Session, Query(_response): Query<AuthResponse>) -> Result<HttpResponse<Body>> {
     todo!()
 }
