@@ -8,6 +8,14 @@ use super::random::RandomString;
 
 #[derive(Debug, Error)]
 pub enum SpotifySigninError {
+    #[error("missing request attributes")]
+    RequestAttributesMissing,
+
+    #[error("state mismatch")]
+    StateMismatch,
+
+    #[error("token request failed")]
+    TokenRequestFailed(#[from] reqwest::Error)
 }
 
 type Result<T> = std::result::Result<T, SpotifySigninError>;
@@ -89,11 +97,66 @@ impl<'a> SpotifySignin<'a> {
     }
 
     pub async fn execute(&self) -> Result<SigninResult> {
-        todo!()
+        let attrs = self.attributes.as_ref().ok_or(SpotifySigninError::RequestAttributesMissing)?;
+        if self.response.state != attrs.state {
+            return Err(SpotifySigninError::StateMismatch)
+        }
+
+        let token = TokenRequest::new(self.config, &self.response.code, &attrs.code_verifier).execute().await?;
+        let result = SigninResult {
+            access_token: token.access_token,
+        };
+        Ok(result)
     }
 }
 
 #[derive(Debug, Serialize)]
 pub struct SigninResult {
     access_token: String,
+}
+
+struct TokenRequest<'a> {
+    config: &'a SpotifyConfig,
+    code: &'a str,
+    code_verifier: &'a str,
+}
+
+impl<'a> TokenRequest<'a> {
+    fn new(config: &'a SpotifyConfig, code: &'a str, code_verifier: &'a str) -> Self {
+        Self {
+            config: config,
+            code: code,
+            code_verifier: code_verifier,
+        }
+    }
+
+    async fn execute(&self) -> Result<AccessToken> {
+        let config = self.config;
+
+        let client = reqwest::Client::new();
+        let parameters = [
+            ("grant_type", "authorization_code"),
+            ("client_id", &config.client_id),
+            ("code", self.code),
+            ("redirect_uri", &config.redirect_uri),
+            ("code_verifier", self.code_verifier),
+        ];
+        let result = client.post("https://accounts.spotify.com/api/token")
+            .header("Accept", "application/json")
+            .form(&parameters)
+            .send()
+            .await?
+            .json::<AccessToken>().await?;
+
+        Ok(result)
+    }
+}
+
+#[derive(Debug, Deserialize)]
+struct AccessToken {
+    access_token: String,
+    token_type: String,
+    scope: String,
+    expires_in: u64,
+    refresh_token: String,
 }
