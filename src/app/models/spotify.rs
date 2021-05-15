@@ -103,7 +103,11 @@ impl<'a> SpotifySignin<'a> {
         }
 
         let token = TokenRequest::new(self.config, &self.response.code, &attrs.code_verifier).execute().await?;
+        let user = UserRequest::new(&token.access_token).execute().await?;
         let result = SigninResult {
+            id: user.id,
+            display_name: user.display_name,
+            email: user.email,
             access_token: token.access_token,
         };
         Ok(result)
@@ -112,6 +116,9 @@ impl<'a> SpotifySignin<'a> {
 
 #[derive(Debug, Serialize)]
 pub struct SigninResult {
+    id: String,
+    display_name: String,
+    email: String,
     access_token: String,
 }
 
@@ -159,4 +166,35 @@ struct AccessToken {
     scope: String,
     expires_in: u64,
     refresh_token: String,
+}
+
+struct UserRequest<'a> {
+    access_token: &'a str,
+}
+
+impl<'a> UserRequest<'a> {
+    fn new(access_token: &'a str) -> Self {
+        Self {
+            access_token: access_token,
+        }
+    }
+
+    async fn execute(&self) -> Result<User> {
+        let client = reqwest::Client::new();
+        let result = client.get("https://api.spotify.com/v1/me")
+            .header("Accept", "application/json")
+            .header("Authorization", format!("Bearer {}", self.access_token))
+            .send()
+            .await?
+            .json::<User>().await?;
+
+        Ok(result)
+    }
+}
+
+#[derive(Debug, Deserialize)]
+struct User {
+    id: String,
+    display_name: String,
+    email: String,
 }
