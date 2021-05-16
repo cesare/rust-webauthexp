@@ -15,7 +15,10 @@ pub enum SpotifySigninError {
     StateMismatch,
 
     #[error("token request failed")]
-    TokenRequestFailed(#[from] reqwest::Error)
+    TokenRequestFailed(#[from] reqwest::Error),
+
+    #[error("invalid url")]
+    InvalidUrl(#[from] url::ParseError),
 }
 
 type Result<T> = std::result::Result<T, SpotifySigninError>;
@@ -47,7 +50,7 @@ impl<'a> SpotifyAuthorization<'a> {
             ("code_challenge_method", "S256"),
             ("code_challenge", &pkce.code_challenge),
         ];
-        let uri = Url::parse_with_params(base, &parameters).unwrap();
+        let uri = Url::parse_with_params(base, &parameters)?;
 
         let request = AuthRequest {
             request_uri: uri.into(),
