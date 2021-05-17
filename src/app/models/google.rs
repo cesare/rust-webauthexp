@@ -2,24 +2,13 @@ use std::time::{SystemTime, SystemTimeError};
 
 use anyhow::{anyhow, Result};
 use jsonwebtoken::{Algorithm, DecodingKey, Validation};
-use rand::{RngCore, SeedableRng, rngs::StdRng};
 use serde_derive::{Deserialize, Serialize};
 use thiserror::Error;
 use url::Url;
 
 use crate::app::config::GoogleConfig;
 use crate::app::models::oidc::discovery::{JsonWebKey, OpenIdConfiguration, OpenIdConfigurationDiscovery};
-
-struct RandomString<const N: usize> {}
-
-impl<const N: usize> RandomString<N> {
-    fn generate() -> String {
-        let mut rng = StdRng::from_entropy();
-        let mut rs: [u8; N] = [0; N];
-        rng.fill_bytes(&mut rs);
-        base64::encode_config(rs, base64::URL_SAFE)
-    }
-}
+use crate::app::models::random::RandomString;
 
 pub struct GoogleAutorization<'a> {
     config: &'a GoogleConfig,
