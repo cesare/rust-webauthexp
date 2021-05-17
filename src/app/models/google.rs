@@ -95,23 +95,27 @@ pub enum GoogleSigninError {
 
 pub struct GoogleSignin<'a> {
     config: &'a GoogleConfig,
+    auth: &'a GoogleAuthorizationResponse,
+    attributes: Option<RequestAttributes>,
 }
 
 impl<'a> GoogleSignin<'a> {
-    pub fn new(config: &'a GoogleConfig) -> Self {
+    pub fn new(config: &'a GoogleConfig, auth: &'a GoogleAuthorizationResponse, attributes: Option<RequestAttributes>) -> Self {
         Self {
             config: config,
+            auth: auth,
+            attributes: attributes,
         }
     }
 
-    pub async fn execute(&self, auth: &GoogleAuthorizationResponse, attributes: Option<RequestAttributes>) -> Result<GoogleId> {
-        let attrs = attributes.ok_or(GoogleSigninError::RequestAttributesMissing)?;
-        if attrs.state != auth.state {
+    pub async fn execute(&self) -> Result<GoogleId> {
+        let attrs = self.attributes.as_ref().ok_or(GoogleSigninError::RequestAttributesMissing)?;
+        if attrs.state != self.auth.state {
             return Err(anyhow!(GoogleSigninError::StateMismatch))
         }
 
         let openid_config = OpenIdConfigurationDiscovery::new(&self.config.issuer()).execute().await?;
-        let token_response = TokenRequest::new(&self.config, &openid_config, &auth.code).execute().await?;
+        let token_response = TokenRequest::new(&self.config, &openid_config, &self.auth.code).execute().await?;
 
         let id_token = token_response.id_token;
         let header = jsonwebtoken::decode_header(&id_token)?;
@@ -130,7 +134,7 @@ impl<'a> GoogleSignin<'a> {
         Ok(jwk.clone())
     }
 
-    fn validate_claims(&self, claims: &Claims, attrs: RequestAttributes) -> Result<(), GoogleSigninError> {
+    fn validate_claims(&self, claims: &Claims, attrs: &RequestAttributes) -> Result<(), GoogleSigninError> {
         if claims.nonce != attrs.nonce {
             return Err(GoogleSigninError::NonceMismatch)
         }

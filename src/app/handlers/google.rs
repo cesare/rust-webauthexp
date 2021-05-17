@@ -28,7 +28,7 @@ async fn callback(config: Data<GoogleConfig>, session: Session, Query(response):
     let attributes = session.get::<RequestAttributes>(key)?;
     let _ = session.remove(key);
 
-    let result = GoogleSignin::new(&config).execute(&response, attributes).await;
+    let result = GoogleSignin::new(&config, &response, attributes).execute().await;
     match result {
         Ok(google_id) => {
             let response = HttpResponse::Ok().json(google_id);
