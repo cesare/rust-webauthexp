@@ -1,13 +1,22 @@
 use actix_http::{ResponseError, body::Body};
 use actix_session::Session;
 use actix_web::{HttpResponse, Result, Scope, web::{Data, Query, get, scope}};
+use serde::Serialize;
 
 use crate::app::config::SpotifyConfig;
 use crate::app::models::spotify::{AuthResponse, RequestAttributes, SpotifyAuthorization, SpotifySignin, SpotifySigninError};
 
+#[derive(Debug, Serialize)]
+struct ErrorMessage {
+    message: String,
+}
+
 impl ResponseError for SpotifySigninError {
     fn error_response(&self) -> HttpResponse {
-        HttpResponse::InternalServerError().finish()
+        let message = ErrorMessage {
+            message: self.to_string(),
+        };
+        HttpResponse::InternalServerError().json(message)
     }
 }
 
