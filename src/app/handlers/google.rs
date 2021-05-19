@@ -1,9 +1,24 @@
-use actix_http::body::Body;
+use actix_http::{ResponseError, body::Body};
 use actix_session::Session;
 use actix_web::{HttpResponse, Result, Scope, web::{Data, Query, get, scope}};
+use serde::Serialize;
 
 use crate::app::config::GoogleConfig;
-use crate::app::models::google::{GoogleAutorization, GoogleAuthorizationResponse, GoogleSignin, RequestAttributes};
+use crate::app::models::google::{GoogleAutorization, GoogleAuthorizationResponse, GoogleSignin, GoogleSigninError, RequestAttributes};
+
+#[derive(Debug, Serialize)]
+struct ErrorMessage {
+    message: String,
+}
+
+impl ResponseError for GoogleSigninError {
+    fn error_response(&self) -> HttpResponse {
+        let message = ErrorMessage {
+            message: self.to_string(),
+        };
+        HttpResponse::InternalServerError().json(message)
+    }
+}
 
 pub fn create_scope(config: &GoogleConfig) -> Scope {
     scope("/google")
@@ -28,15 +43,7 @@ async fn callback(config: Data<GoogleConfig>, session: Session, Query(response):
     let attributes = session.get::<RequestAttributes>(key)?;
     let _ = session.remove(key);
 
-    let result = GoogleSignin::new(&config, &response, attributes).execute().await;
-    match result {
-        Ok(google_id) => {
-            let response = HttpResponse::Ok().json(google_id);
-            Ok(response)
-        },
-        _ => {
-            let response = HttpResponse::InternalServerError().finish();
-            Ok(response)
-        }
-    }
+    let google_id = GoogleSignin::new(&config, &response, attributes).execute().await?;
+    let response = HttpResponse::Ok().json(google_id);
+    Ok(response)
 }

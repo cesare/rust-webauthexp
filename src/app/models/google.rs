@@ -1,6 +1,6 @@
 use std::time::{SystemTime, SystemTimeError};
 
-use anyhow::{anyhow, Result};
+use anyhow::Result;
 use jsonwebtoken::{Algorithm, DecodingKey, Validation};
 use serde_derive::{Deserialize, Serialize};
 use thiserror::Error;
@@ -91,6 +91,12 @@ pub enum GoogleSigninError {
 
     #[error("Failed to get duration for current time")]
     InvalidCurrentTime(#[from] SystemTimeError),
+
+    #[error("JWT error")]
+    JwtError(#[from] jsonwebtoken::errors::Error),
+
+    #[error(transparent)]
+    OtherError(#[from] anyhow::Error),
 }
 
 pub struct GoogleSignin<'a> {
@@ -108,10 +114,10 @@ impl<'a> GoogleSignin<'a> {
         }
     }
 
-    pub async fn execute(&self) -> Result<GoogleId> {
+    pub async fn execute(&self) -> Result<GoogleId, GoogleSigninError> {
         let attrs = self.attributes.as_ref().ok_or(GoogleSigninError::RequestAttributesMissing)?;
         if attrs.state != self.auth.state {
-            return Err(anyhow!(GoogleSigninError::StateMismatch))
+            return Err(GoogleSigninError::StateMismatch)
         }
 
         let openid_config = OpenIdConfigurationDiscovery::new(&self.config.issuer()).execute().await?;
