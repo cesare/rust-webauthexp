@@ -1,5 +1,13 @@
-use anyhow::Result;
 use serde_derive::{Deserialize, Serialize};
+use thiserror::Error;
+
+#[derive(Debug, Error)]
+pub enum DiscoveryError {
+    #[error("HTTP request failed")]
+    HttpRequestFailed(#[from] reqwest::Error),
+}
+
+type Result<T> = std::result::Result<T, DiscoveryError>;
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct OpenIdConfiguration {

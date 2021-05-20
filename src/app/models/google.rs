@@ -7,7 +7,7 @@ use thiserror::Error;
 use url::Url;
 
 use crate::app::config::GoogleConfig;
-use crate::app::models::oidc::discovery::{JsonWebKey, OpenIdConfiguration, OpenIdConfigurationDiscovery};
+use crate::app::models::oidc::discovery::{DiscoveryError, JsonWebKey, OpenIdConfiguration, OpenIdConfigurationDiscovery};
 use crate::app::models::random::RandomString;
 
 pub struct GoogleAutorization<'a> {
@@ -94,6 +94,9 @@ pub enum GoogleSigninError {
 
     #[error("JWT error")]
     JwtError(#[from] jsonwebtoken::errors::Error),
+
+    #[error("Discovery failed")]
+    DiscoveryFailed(#[from] DiscoveryError),
 
     #[error(transparent)]
     OtherError(#[from] anyhow::Error),
