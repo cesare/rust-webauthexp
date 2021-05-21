@@ -3,8 +3,26 @@ use thiserror::Error;
 
 #[derive(Debug, Error)]
 pub enum DiscoveryError {
-    #[error("HTTP request failed")]
-    HttpRequestFailed(#[from] reqwest::Error),
+    #[error("Decoding response body for {uri} failed: {message}")]
+    DecodingFailed { uri: String, message: String },
+
+    #[error("HTTP request for {uri} failed: {message}")]
+    HttpRequestFailed { uri: String, message: String }
+}
+
+impl From<reqwest::Error> for DiscoveryError {
+    fn from(error: reqwest::Error) -> Self {
+        let message = error.to_string();
+        let uri = error.url()
+            .map(|url| url.as_str())
+            .unwrap_or("-")
+            .to_owned();
+
+        if error.is_decode() {
+            return Self::DecodingFailed { uri: uri, message: message }
+        }
+        Self::HttpRequestFailed { uri: uri, message: message }
+    }
 }
 
 type Result<T> = std::result::Result<T, DiscoveryError>;
