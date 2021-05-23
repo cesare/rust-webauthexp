@@ -103,3 +103,41 @@ impl JwksDiscovery {
         Ok(result)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use httpmock::MockServer;
+    use httpmock::Method::GET;
+    use serde_json::json;
+    use super::*;
+
+    #[actix_rt::test]
+    async fn test_oidc_configuration_discovery() {
+        let server = MockServer::start();
+
+        let issuer = server.base_url();
+        let authorization_endpoint = format!("{}/authorize", issuer);
+        let token_endpoint = format!("{}/token", issuer);
+        let userinfo_endpoint = format!("{}/userinfo", issuer);
+        let jwks_endpoint = format!("{}/jwks", issuer);
+
+        let _mock = server.mock(|when, then| {
+            when.method(GET).path("/.well-known/openid-configuration");
+            then.status(200).json_body(json!({
+                "issuer": issuer,
+                "authorization_endpoint": authorization_endpoint,
+                "token_endpoint": token_endpoint,
+                "userinfo_endpoint": userinfo_endpoint,
+                "jwks_uri": jwks_endpoint,
+            }));
+        });
+        let discovery = OpenIdConfigurationDiscovery::new(server.base_url());
+        let result = discovery.execute().await.unwrap();
+
+        assert_eq!(issuer, result.issuer);
+        assert_eq!(authorization_endpoint, result.authorization_endpoint);
+        assert_eq!(token_endpoint, result.token_endpoint);
+        assert_eq!(Some(userinfo_endpoint), result.userinfo_endpoint);
+        assert_eq!(jwks_endpoint, result.jwks_uri);
+    }
+}
