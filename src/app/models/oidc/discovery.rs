@@ -140,4 +140,49 @@ mod tests {
         assert_eq!(Some(userinfo_endpoint), result.userinfo_endpoint);
         assert_eq!(jwks_endpoint, result.jwks_uri);
     }
+
+    #[actix_rt::test]
+    async fn test_find_jwks() {
+        let server = MockServer::start();
+
+        let issuer = server.base_url();
+        let authorization_endpoint = format!("{}/authorize", issuer);
+        let token_endpoint = format!("{}/token", issuer);
+        let userinfo_endpoint = format!("{}/userinfo", issuer);
+        let jwks_endpoint = format!("{}/jwks", issuer);
+
+        let oidc_config = OpenIdConfiguration {
+            issuer: issuer,
+            authorization_endpoint: authorization_endpoint,
+            token_endpoint: token_endpoint,
+            userinfo_endpoint: Some(userinfo_endpoint),
+            jwks_uri: jwks_endpoint,
+        };
+        let _mock = server.mock(|when, then| {
+            when.method(GET).path("/jwks");
+            then.status(200).json_body(json!({
+                "keys": [
+                    {
+                        "alg": "RS256",
+                        "kty": "RSA",
+                        "kid": "test-key-id",
+                        "use": "sig",
+                        "n": "xxxxxx",
+                        "e": "yyyyyyy",
+                    }
+                ]
+            }));
+        });
+
+        let results = oidc_config.find_jwks().await.unwrap();
+        assert_eq!(1, results.keys.len());
+
+        let jwk = results.keys.first().unwrap();
+        assert_eq!("RS256", jwk.alg);
+        assert_eq!("RSA", jwk.kty);
+        assert_eq!("test-key-id", jwk.kid);
+        assert_eq!("sig", jwk.key_use);
+        assert_eq!("xxxxxx", jwk.n);
+        assert_eq!("yyyyyyy", jwk.e);
+    }
 }
