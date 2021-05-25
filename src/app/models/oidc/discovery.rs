@@ -1,3 +1,5 @@
+use std::cmp::PartialEq;
+
 use serde_derive::{Deserialize, Serialize};
 use thiserror::Error;
 
@@ -74,7 +76,7 @@ impl Jwks {
     }
 }
 
-#[derive(Clone, Debug, Deserialize, Serialize)]
+#[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
 pub struct JsonWebKey {
     pub alg: String,
     #[serde(rename = "use")]
@@ -184,5 +186,37 @@ mod tests {
         assert_eq!("sig", jwk.key_use);
         assert_eq!("xxxxxx", jwk.n);
         assert_eq!("yyyyyyy", jwk.e);
+    }
+
+    #[test]
+    fn test_find_by_kid() {
+        let jwk1 = JsonWebKey {
+            alg: "RS256".to_owned(),
+            key_use: "sig".to_owned(),
+            kid: "key-01".to_owned(),
+            e: "xxxxxx".to_owned(),
+            kty: "RSA".to_owned(),
+            n: "yyyyyy".to_owned(),
+        };
+        let jwk2 = JsonWebKey {
+            alg: "RS256".to_owned(),
+            key_use: "sig".to_owned(),
+            kid: "key-02".to_owned(),
+            e: "aaaaa".to_owned(),
+            kty: "RSA".to_owned(),
+            n: "bbbbb".to_owned(),
+        };
+        let jwks = Jwks {
+            keys: vec![
+                jwk1.to_owned(),
+                jwk2.to_owned()
+            ],
+        };
+
+        let result = jwks.find_by_kid("key-02");
+        assert_eq!(Some(&jwk2), result);
+
+        let result = jwks.find_by_kid("no-such-key");
+        assert_eq!(None, result);
     }
 }
