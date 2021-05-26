@@ -46,11 +46,11 @@ impl<'a> GoogleAutorization<'a> {
     }
 
     fn generate_state(&self) -> String {
-        RandomString::<32>::generate()
+        RandomString::<32>::new().generate()
     }
 
     fn generate_nonce(&self) -> String {
-        RandomString::<32>::generate()
+        RandomString::<32>::new().generate()
     }
 }
 

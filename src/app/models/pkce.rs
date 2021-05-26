@@ -21,7 +21,7 @@ impl Pkce {
     }
 
     fn generate_verifier() -> String {
-        RandomString::<32>::generate()
+        RandomString::<32>::new().generate()
     }
 
     fn generate_challenge(verifier: &str) -> String {

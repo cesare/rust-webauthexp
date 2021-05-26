@@ -63,7 +63,7 @@ impl<'a> SpotifyAuthorization<'a> {
     }
 
     fn generate_state(&self) -> String {
-        RandomString::<32>::generate()
+        RandomString::<32>::new().generate()
     }
 }
 
