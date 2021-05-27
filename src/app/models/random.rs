@@ -10,6 +10,10 @@ impl<const N: usize> RandomString<N> {
     pub fn new() -> Self {
         Self {}
     }
+
+    pub fn generator() -> Box<dyn RandomStringGenerator<N>> {
+        Box::new(Self::new())
+    }
 }
 
 impl<const N: usize> RandomStringGenerator<N> for RandomString<N> {

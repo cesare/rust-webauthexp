@@ -2,7 +2,8 @@ use serde_derive::{Deserialize, Serialize};
 use thiserror::Error;
 use url::Url;
 
-use crate::app::{config::SpotifyConfig, models::pkce::Pkce};
+use crate::app::config::SpotifyConfig;
+use crate::app::models::pkce::PkceGenerator;
 
 use super::random::{RandomString, RandomStringGenerator};
 
@@ -37,7 +38,7 @@ impl<'a> SpotifyAuthorization<'a> {
     pub fn start(&self) -> Result<AuthRequest> {
         let config = self.config;
 
-        let pkce = Pkce::new();
+        let pkce = PkceGenerator::<32>::default().generate();
         let state = self.generate_state();
 
         let base = "https://accounts.spotify.com/authorize";
