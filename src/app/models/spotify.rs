@@ -4,7 +4,7 @@ use url::Url;
 
 use crate::app::{config::SpotifyConfig, models::pkce::Pkce};
 
-use super::random::RandomString;
+use super::random::{RandomString, RandomStringGenerator};
 
 #[derive(Debug, Error)]
 pub enum SpotifySigninError {

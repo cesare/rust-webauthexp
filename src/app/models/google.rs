@@ -8,7 +8,7 @@ use url::Url;
 
 use crate::app::config::GoogleConfig;
 use crate::app::models::oidc::discovery::{DiscoveryError, JsonWebKey, OpenIdConfiguration, OpenIdConfigurationDiscovery};
-use crate::app::models::random::RandomString;
+use crate::app::models::random::{RandomString, RandomStringGenerator};
 
 pub struct GoogleAutorization<'a> {
     config: &'a GoogleConfig,

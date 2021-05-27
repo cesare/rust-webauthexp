@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 
-use crate::app::models::random::RandomString;
+use crate::app::models::random::{RandomString, RandomStringGenerator};
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Pkce {
