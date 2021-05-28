@@ -10,13 +10,13 @@ pub struct Pkce {
 }
 
 pub struct PkceGenerator<const N: usize> {
-    rsg: Box<dyn RandomStringGenerator<N>>,
+    rsg: Box<dyn RandomStringGenerator>,
 }
 
 impl<const N: usize> Default for PkceGenerator<N> {
     fn default() -> Self {
         Self {
-            rsg: RandomString::<N>::generator(),
+            rsg: Box::new(RandomString::new()),
         }
     }
 }
@@ -33,7 +33,7 @@ impl<const N: usize> PkceGenerator<N> {
     }
 
     fn generate_verifier(&self) -> String {
-        self.rsg.generate()
+        self.rsg.generate(32)
     }
 
     fn generate_challenge(&self, verifier: &str) -> String {
