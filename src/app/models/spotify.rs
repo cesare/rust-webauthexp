@@ -38,7 +38,7 @@ impl<'a> SpotifyAuthorization<'a> {
     pub fn start(&self) -> Result<AuthRequest> {
         let config = self.config;
 
-        let pkce = PkceGenerator::<32>::default().generate();
+        let pkce = PkceGenerator::default().generate(32);
         let state = self.generate_state();
 
         let base = "https://accounts.spotify.com/authorize";
