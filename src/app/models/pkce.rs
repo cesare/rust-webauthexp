@@ -41,3 +41,30 @@ impl PkceGenerator {
         base64::encode_config(digest, base64::URL_SAFE_NO_PAD)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::app::models::random::RandomStringGenerator;
+
+    struct DummyRSG {}
+    impl RandomStringGenerator for DummyRSG {
+        fn generate(&self, size: usize) -> String {
+            let mut bytes = vec![0u8; size];
+            for n in 0..size {
+                bytes[n] = n as u8;
+            }
+            base64::encode_config(bytes, base64::URL_SAFE_NO_PAD)
+        }
+    }
+
+    #[test]
+    fn test_pkce_generator() {
+        let generator = PkceGenerator {
+            rsg: Box::new(DummyRSG {}),
+        };
+        let pkce = generator.generate(16);
+        assert_eq!("AAECAwQFBgcICQoLDA0ODw", pkce.code_verifier);
+        assert_eq!("XSYR1aTdK0Cyd9_bXs9bSYGRUNfVxi9O75YMsMJNsgw", pkce.code_challenge);
+    }
+}
