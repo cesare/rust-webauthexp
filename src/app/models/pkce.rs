@@ -50,10 +50,7 @@ mod tests {
     struct DummyRSG {}
     impl RandomStringGenerator for DummyRSG {
         fn generate(&self, size: usize) -> String {
-            let mut bytes = vec![0u8; size];
-            for n in 0..size {
-                bytes[n] = n as u8;
-            }
+            let bytes: Vec<u8> = (0..size).map(|n| n as u8).collect();
             base64::encode_config(bytes, base64::URL_SAFE_NO_PAD)
         }
     }
