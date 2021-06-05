@@ -113,6 +113,7 @@ impl<'a> SpotifySignin<'a> {
             display_name: user.display_name,
             email: user.email,
             access_token: token.access_token,
+            refresh_token: token.refresh_token,
         };
         Ok(result)
     }
@@ -124,6 +125,7 @@ pub struct SigninResult {
     display_name: String,
     email: String,
     access_token: String,
+    refresh_token: String,
 }
 
 struct TokenRequest<'a> {
