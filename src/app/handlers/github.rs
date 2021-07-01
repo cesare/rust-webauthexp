@@ -7,7 +7,7 @@ use crate::app::models::github::{GithubAutorizationRequest, GithubAuthorizationR
 
 pub fn create_scope(config: &GithubConfig) -> Scope {
     scope("/github")
-        .data(config.clone())
+        .app_data(config.clone())
         .route("", get().to(index))
         .route("/", get().to(index))
         .route("/callback", get().to(callback))

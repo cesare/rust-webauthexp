@@ -1,6 +1,6 @@
-use actix_http::{ResponseError, body::Body};
+use actix_http::{body::Body};
 use actix_session::Session;
-use actix_web::{HttpResponse, Result, Scope, web::{Data, Query, get, scope}};
+use actix_web::{HttpResponse, ResponseError, Result, Scope, web::{Data, Query, get, scope}};
 use serde::Serialize;
 
 use crate::app::config::GoogleConfig;
@@ -22,7 +22,7 @@ impl ResponseError for GoogleSigninError {
 
 pub fn create_scope(config: &GoogleConfig) -> Scope {
     scope("/google")
-        .data(config.clone())
+        .app_data(config.clone())
         .route("", get().to(index))
         .route("/", get().to(index))
         .route("/callback", get().to(callback))
