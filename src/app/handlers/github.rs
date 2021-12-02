@@ -1,4 +1,4 @@
-use actix_http::body::Body;
+use actix_http::body::AnyBody;
 use actix_session::Session;
 use actix_web::{HttpResponse, Result, Scope, web::{Data, Query, get, scope}};
 
@@ -13,7 +13,7 @@ pub fn create_scope(config: &GithubConfig) -> Scope {
         .route("/callback", get().to(callback))
 }
 
-async fn index(config: Data<GithubConfig>, session: Session) -> Result<HttpResponse<Body>> {
+async fn index(config: Data<GithubConfig>, session: Session) -> Result<HttpResponse<AnyBody>> {
     let request = GithubAutorizationRequest::new(&config);
     let (request_uri, state) = request.create().unwrap();
     session.insert("github-oauth-state", &state)?;
@@ -24,7 +24,7 @@ async fn index(config: Data<GithubConfig>, session: Session) -> Result<HttpRespo
     Ok(response)
 }
 
-async fn callback(config: Data<GithubConfig>, session: Session, Query(response): Query<GithubAuthorizationResponse>) -> Result<HttpResponse<Body>> {
+async fn callback(config: Data<GithubConfig>, session: Session, Query(response): Query<GithubAuthorizationResponse>) -> Result<HttpResponse<AnyBody>> {
     let key = "github-oauth-state";
     let saved_state: Option<String> = session.get(key)?;
     let _ = session.remove(key);
