@@ -1,6 +1,6 @@
-use actix_http::body::AnyBody;
 use actix_session::Session;
 use actix_web::{HttpResponse, ResponseError, Result, Scope, web::{Data, Query, get, scope}};
+use actix_web::body::BoxBody;
 use serde::Serialize;
 
 use crate::app::config::GoogleConfig;
@@ -28,7 +28,7 @@ pub fn create_scope(config: &GoogleConfig) -> Scope {
         .route("/callback", get().to(callback))
 }
 
-async fn index(config: Data<GoogleConfig>, session: Session) -> Result<HttpResponse<AnyBody>> {
+async fn index(config: Data<GoogleConfig>, session: Session) -> Result<HttpResponse<BoxBody>> {
     let request = GoogleAutorization::new(&config).start().unwrap();
     session.insert("google-oidc", &request.attributes)?;
 
@@ -38,7 +38,7 @@ async fn index(config: Data<GoogleConfig>, session: Session) -> Result<HttpRespo
     Ok(response)
 }
 
-async fn callback(config: Data<GoogleConfig>, session: Session, Query(response): Query<GoogleAuthorizationResponse>) -> Result<HttpResponse<AnyBody>> {
+async fn callback(config: Data<GoogleConfig>, session: Session, Query(response): Query<GoogleAuthorizationResponse>) -> Result<HttpResponse<BoxBody>> {
     let key = "google-oidc";
     let attributes = session.get::<RequestAttributes>(key)?;
     let _ = session.remove(key);

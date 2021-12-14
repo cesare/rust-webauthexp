@@ -1,6 +1,6 @@
-use actix_http::body::AnyBody;
 use actix_session::Session;
 use actix_web::{HttpResponse, ResponseError, Result, Scope, web::{Data, Query, get, scope}};
+use actix_web::body::BoxBody;
 use serde::Serialize;
 
 use crate::app::config::SpotifyConfig;
@@ -28,7 +28,7 @@ pub fn create_scope(config: &SpotifyConfig) -> Scope {
         .route("/callback", get().to(callback))
 }
 
-async fn index(config: Data<SpotifyConfig>, session: Session) -> Result<HttpResponse<AnyBody>> {
+async fn index(config: Data<SpotifyConfig>, session: Session) -> Result<HttpResponse<BoxBody>> {
     let request = SpotifyAuthorization::new(&config).start().unwrap();
     session.insert("spotify-oauth", &request.attributes)?;
 
@@ -38,7 +38,7 @@ async fn index(config: Data<SpotifyConfig>, session: Session) -> Result<HttpResp
     Ok(response)
 }
 
-async fn callback(config: Data<SpotifyConfig>, session: Session, Query(response): Query<AuthResponse>) -> Result<HttpResponse<AnyBody>> {
+async fn callback(config: Data<SpotifyConfig>, session: Session, Query(response): Query<AuthResponse>) -> Result<HttpResponse<BoxBody>> {
     let key = "spotify-oauth";
     let attributes = session.get::<RequestAttributes>(key)?;
     let _ = session.remove(key);

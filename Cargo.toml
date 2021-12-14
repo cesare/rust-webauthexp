@@ -5,11 +5,10 @@ authors = ["SAWADA Tadashi <cesare@mayverse.jp>"]
 edition = "2021"
 
 [dependencies]
-actix-http = "=3.0.0-beta.14"
 actix-rt = "~2.4.0"
-actix-service = "=2.0.0"
-actix-session = "=0.5.0-beta.4"
-actix-web = "=4.0.0-beta.13"
+actix-service = "~2.0.0"
+actix-session = "0.5.0-beta.5"
+actix-web = "=4.0.0-beta.14"
 actix-utils = "~3.0.0"
 anyhow = "~1.0.40"
 base64 = "~0.13.0"
