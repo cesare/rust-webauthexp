@@ -5,7 +5,7 @@ use webauthexp::app::models::oidc::discovery::OpenIdConfigurationDiscovery;
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    if let Some(issuer) = args().skip(1).next() {
+    if let Some(issuer) = args().nth(1) {
         let discovery = OpenIdConfigurationDiscovery::new(&issuer);
         let configuration = discovery.execute().await?;
         print!("{:?}", configuration);
