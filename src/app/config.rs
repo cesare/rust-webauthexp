@@ -26,6 +26,12 @@ impl AppArgs {
     }
 }
 
+impl Default for AppArgs {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 #[derive(Clone, Debug, Deserialize)]
 struct ServerConfig {
     bind: String,

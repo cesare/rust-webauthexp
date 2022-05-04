@@ -6,6 +6,12 @@ pub trait RandomStringGenerator {
 
 pub struct RandomString {}
 
+impl Default for RandomString {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl RandomString {
     pub fn new() -> Self {
         Self {}
