@@ -124,7 +124,7 @@ impl<'a> GoogleSignin<'a> {
         }
 
         let openid_config = OpenIdConfigurationDiscovery::new(&self.config.issuer()).execute().await?;
-        let token_response = TokenRequest::new(&self.config, &openid_config, &self.auth.code).execute().await?;
+        let token_response = TokenRequest::new(self.config, &openid_config, &self.auth.code).execute().await?;
 
         let id_token = token_response.id_token;
         let header = jsonwebtoken::decode_header(&id_token)?;
@@ -139,7 +139,7 @@ impl<'a> GoogleSignin<'a> {
 
     async fn find_jwk(&self, kid: &str, openid_config: &OpenIdConfiguration) -> Result<JsonWebKey> {
         let jwks = openid_config.find_jwks().await?;
-        let jwk = jwks.find_by_kid(&kid).unwrap();
+        let jwk = jwks.find_by_kid(kid).unwrap();
         Ok(jwk.clone())
     }
 

@@ -88,7 +88,7 @@ impl<'a> GithubSignin<'a> {
             return Err(GithubSigninError::StateMismatch)
         }
 
-        let access_token = AccessTokenRequest::new(&self.config)
+        let access_token = AccessTokenRequest::new(self.config)
             .execute(&auth.code, &state)
             .await?;
 
