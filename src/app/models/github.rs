@@ -14,7 +14,7 @@ pub struct GithubAutorizationRequest<'a> {
 impl<'a> GithubAutorizationRequest<'a> {
     pub fn new(config: &'a GithubConfig) -> Self {
         Self {
-            config: config,
+            config,
         }
     }
 
@@ -78,7 +78,7 @@ pub struct GithubSignin<'a> {
 impl<'a> GithubSignin<'a> {
     pub fn new(config: &'a GithubConfig) -> Self {
         Self {
-            config: config,
+            config,
         }
     }
 
@@ -111,7 +111,7 @@ struct AccessToken {
 impl<'a> AccessTokenRequest<'a> {
     fn new(config: &'a GithubConfig) -> Self {
         Self {
-            config: config
+            config,
         }
     }
 

@@ -17,7 +17,7 @@ pub struct GoogleAutorization<'a> {
 impl<'a> GoogleAutorization<'a> {
     pub fn new(config: &'a GoogleConfig) -> Self {
         Self {
-            config: config,
+            config,
         }
     }
 
@@ -38,8 +38,8 @@ impl<'a> GoogleAutorization<'a> {
         let request = GoogleAuthRequest {
             request_uri: url.into(),
             attributes: RequestAttributes {
-                state: state,
-                nonce: nonce,
+                state,
+                nonce,
             }
         };
         Ok(request)
@@ -111,9 +111,9 @@ pub struct GoogleSignin<'a> {
 impl<'a> GoogleSignin<'a> {
     pub fn new(config: &'a GoogleConfig, auth: &'a GoogleAuthorizationResponse, attributes: Option<RequestAttributes>) -> Self {
         Self {
-            config: config,
-            auth: auth,
-            attributes: attributes,
+            config,
+            auth,
+            attributes,
         }
     }
 
@@ -203,9 +203,9 @@ struct TokenRequest<'a> {
 impl<'a> TokenRequest<'a> {
     fn new(config: &'a GoogleConfig, openid_config: &'a OpenIdConfiguration, code: &'a str) -> Self {
         Self {
-            config: config,
-            openid_config: openid_config,
-            code: code,
+            config,
+            openid_config,
+            code,
         }
     }
 

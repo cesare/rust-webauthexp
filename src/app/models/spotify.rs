@@ -31,7 +31,7 @@ pub struct SpotifyAuthorization<'a> {
 impl<'a> SpotifyAuthorization<'a> {
     pub fn new(config: &'a SpotifyConfig) -> Self {
         Self {
-            config: config,
+            config,
         }
     }
 
@@ -56,7 +56,7 @@ impl<'a> SpotifyAuthorization<'a> {
         let request = AuthRequest {
             request_uri: uri.into(),
             attributes: RequestAttributes {
-                state: state,
+                state,
                 code_verifier: pkce.code_verifier,
             },
         };
@@ -94,9 +94,9 @@ pub struct SpotifySignin<'a> {
 impl<'a> SpotifySignin<'a> {
     pub fn new(config: &'a SpotifyConfig, response: &'a AuthResponse, attributes: &'a Option<RequestAttributes>) -> Self {
         Self {
-            config: config,
-            response: response,
-            attributes: attributes,
+            config,
+            response,
+            attributes,
         }
     }
 
@@ -137,9 +137,9 @@ struct TokenRequest<'a> {
 impl<'a> TokenRequest<'a> {
     fn new(config: &'a SpotifyConfig, code: &'a str, code_verifier: &'a str) -> Self {
         Self {
-            config: config,
-            code: code,
-            code_verifier: code_verifier,
+            config,
+            code,
+            code_verifier,
         }
     }
 
@@ -181,7 +181,7 @@ struct UserRequest<'a> {
 impl<'a> UserRequest<'a> {
     fn new(access_token: &'a str) -> Self {
         Self {
-            access_token: access_token,
+            access_token,
         }
     }
 

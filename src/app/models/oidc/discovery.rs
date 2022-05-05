@@ -21,9 +21,9 @@ impl From<reqwest::Error> for DiscoveryError {
             .to_owned();
 
         if error.is_decode() {
-            return Self::DecodingFailed { uri: uri, message: message }
+            return Self::DecodingFailed { uri, message }
         }
-        Self::HttpRequestFailed { uri: uri, message: message }
+        Self::HttpRequestFailed { uri, message }
     }
 }
 
