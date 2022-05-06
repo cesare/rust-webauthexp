@@ -187,11 +187,7 @@ impl From<Claims> for GoogleId {
 
 #[derive(Debug, Deserialize)]
 struct TokenResponse {
-    access_token: String,
-    expires_in: u64,
     id_token: String,
-    scope: String,
-    token_type: String,
 }
 
 struct TokenRequest<'a> {

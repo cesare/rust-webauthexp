@@ -168,9 +168,6 @@ impl<'a> TokenRequest<'a> {
 #[derive(Debug, Deserialize)]
 struct AccessToken {
     access_token: String,
-    token_type: String,
-    scope: String,
-    expires_in: u64,
     refresh_token: String,
 }
 
